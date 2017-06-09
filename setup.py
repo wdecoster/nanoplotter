@@ -8,7 +8,7 @@ here = path.abspath(path.dirname(__file__))
 
 setup(
     name='nanoplotter',
-    version='0.9.1',
+    version='0.10.0',
     description='Plotting functions of Oxford Nanopore sequencing data',
     long_description='Plotting functions of Oxford Nanopore sequencing data.',
     url='https://github.com/wdecoster/nanoplotter',

@@ -9,7 +9,7 @@ from scipy import stats
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-__version__ = "0.9.3"
+__version__ = "0.10.0"
 
 
 def scatter(x, y, names, path, stat=None, log=False, minvalx=0, minvaly=0):
