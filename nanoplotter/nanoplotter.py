@@ -9,7 +9,7 @@ from scipy import stats
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-__version__ = 0.9.1
+__version__ = "0.9.3"
 
 
 def scatter(x, y, names, path, stat=None, log=False, minvalx=0, minvaly=0):
@@ -37,7 +37,7 @@ def scatter(x, y, names, path, stat=None, log=False, minvalx=0, minvaly=0):
 	plot.set_axis_labels(names[0], names[1])
 	if log:
 		plot.ax_joint.set_xticklabels(10**plot.ax_joint.get_xticks().astype(int))
-	plot.savefig(path + "_hex.png", format='png', dpi=1000)
+	plot.savefig(path + "_hex.png", format='png', dpi=100)
 	sns.set(style="darkgrid")
 	plot = sns.jointplot(
 		x=x,
@@ -53,7 +53,7 @@ def scatter(x, y, names, path, stat=None, log=False, minvalx=0, minvaly=0):
 	plot.set_axis_labels(names[0], names[1])
 	if log:
 		plot.ax_joint.set_xticklabels(10**plot.ax_joint.get_xticks().astype(int))
-	plot.savefig(path + "_scatter.png", format='png', dpi=1000)
+	plot.savefig(path + "_scatter.png", format='png', dpi=100)
 
 	plot = sns.jointplot(
 		x=x,
@@ -70,7 +70,7 @@ def scatter(x, y, names, path, stat=None, log=False, minvalx=0, minvaly=0):
 	plot.set_axis_labels(names[0], names[1])
 	if log:
 		plot.ax_joint.set_xticklabels(10**plot.ax_joint.get_xticks().astype(int))
-	plot.savefig(path + "_kde.png", format='png', dpi=1000)
+	plot.savefig(path + "_kde.png", format='png', dpi=100)
 	plt.close("all")
 
 
@@ -80,34 +80,43 @@ def timePlots(df, path):
 	Making plots of time vs read length, time vs quality and cumulative yield
 	'''
 	dfs_sparse = df.sample(min(2000, len(df.index))).sort_values("start_time")
-	dfs_sparse["time_h"] = dfs_sparse["start_time"].astype('timedelta64[h]')
+	dfs_sparse["time"] = dfs_sparse["start_time"].astype('timedelta64[s]')
+	dfs_sparse["cumyield_gb"] = dfs_sparse["lengths"].cumsum() / 10**9
+	maxtime = dfs_sparse.time.max()
+	ticks = [int(i) for i in range(100) if not i > (maxtime / 3600)]
+
 	g = sns.JointGrid(
-		x='time_h',
+		x='time',
 		y='quals',
 		data=dfs_sparse,
 		space=0,
 		size=10,
-		xlim=(0, dfs_sparse.time_h.max()))
+		joint_kws={"s": 1},
+		xlim=(0, maxtime))
 	g.plot_joint(plt.scatter, color="#4CB391")
+	g.ax_joint.set_xticks([i * 3600 for i in ticks])
+	g.ax_joint.set_xticklabels(ticks)
 	g.ax_marg_y.hist(dfs_sparse['quals'].dropna(), orientation="horizontal", color="#4CB391")
 	g.set_axis_labels('Run tim (hours)', 'Median average basecall quality')
-	g.savefig(path + "TimeQualityScatterPlot.png", format='png', dpi=1000)
+	g.savefig(path + "TimeQualityScatterPlot.png", format='png', dpi=100)
 
 	g = sns.JointGrid(
-		x='time_h',
+		x='time',
 		y="lengths",
 		data=dfs_sparse,
 		space=0,
 		size=10,
 		xlim=(0, dfs_sparse.time_h.max()))
 	g.plot_joint(plt.scatter, color="#4CB391")
+	g.ax_joint.set_xticks([i * 3600 for i in ticks])
+	g.ax_joint.set_xticklabels(ticks)
 	g.ax_marg_y.hist(dfs_sparse["lengths"].dropna(), orientation="horizontal", color="#4CB391")
 	g.set_axis_labels('Run tim (hours)', 'Median read length')
-	g.savefig(path + "TimeLengthScatterPlot.png", format='png', dpi=1000)
+	g.savefig(path + "TimeLengthScatterPlot.png", format='png', dpi=100)
 
-	dfs_sparse["cumyield_gb"] = dfs_sparse["lengths"].cumsum() / 10**9
+
 	g = sns.JointGrid(
-		x='time_h',
+		x='time',
 		y="cumyield_gb",
 		data=dfs_sparse,
 		space=0,
@@ -115,8 +124,10 @@ def timePlots(df, path):
 		xlim=(0, dfs_sparse.time_h.max()),
 		ylim=(0, dfs_sparse.tail(1)["cumyield_gb"].item()))
 	g.plot_joint(plt.scatter, color="#4CB391")
+	g.ax_joint.set_xticks([i * 3600 for i in ticks])
+	g.ax_joint.set_xticklabels(ticks)
 	g.set_axis_labels('Run tim (hours)', 'Cumulative yield in gigabase')
-	g.savefig(path + "CumulativeYieldPlot.png", format='png', dpi=1000)
+	g.savefig(path + "CumulativeYieldPlot.png", format='png', dpi=100)
 	plt.close("all")
 
 
@@ -140,11 +151,9 @@ def lengthPlots(array, name, path, n50, log=False):
 		kde_kws={"label": name, "clip": (0, maxvalx)})
 	if log:
 		ticks = [10**i for i in range(10) if not 10**i > 10**math.ceil(math.log(10**maxvalx,10))]
-		ax.set(
-			xticks=np.log10(ticks),
-			xticklabels=ticks)
+		ax.set(xticks=np.log10(ticks), xticklabels=ticks)
 	fig = ax.get_figure()
-	fig.savefig(path + "DensityCurve" + name.replace(' ', '') + ".png", format='png', dpi=1000)
+	fig.savefig(path + "DensityCurve" + name.replace(' ', '') + ".png", format='png', dpi=100)
 	plt.close("all")
 
 	ax = sns.distplot(
@@ -152,7 +161,6 @@ def lengthPlots(array, name, path, n50, log=False):
 		kde=False,
 		hist=True,
 		color="#4CB391")
-
 	if log:
 		ax.set(
 			xticks=np.log10(ticks),
@@ -164,7 +172,7 @@ def lengthPlots(array, name, path, n50, log=False):
 		plt.annotate('N50', xy=(n50, np.amax([h.get_height() for h in ax.patches])), size=8)
 	ax.set(xlabel='Read length', ylabel='Number of reads')
 	fig = ax.get_figure()
-	fig.savefig(path + "Histogram" + name.replace(' ', '') + ".png", format='png', dpi=1000)
+	fig.savefig(path + "Histogram" + name.replace(' ', '') + ".png", format='png', dpi=100)
 	plt.close("all")
 
 
@@ -194,5 +202,5 @@ def spatialHeatmap(array, title, path, colour):
 		linewidths=0.20)
 	ax.set_title(title)
 	fig = ax.get_figure()
-	fig.savefig(path + ".png", format='png', dpi=1000)
+	fig.savefig(path + ".png", format='png', dpi=100)
 	plt.close("all")
