@@ -8,13 +8,12 @@ import numpy as np
 from scipy import stats
 import matplotlib.pyplot as plt
 import seaborn as sns
-
-__version__ = "0.10.0"
+from .version import __version__
 
 
 def scatter(x, y, names, path, stat=None, log=False, minvalx=0, minvaly=0):
 	'''
-	Plotting function
+	Plotting functionq
 	Create three types of joint plots of length vs quality, containing marginal summaries
 	-A scatter plot with histograms on axes
 	-A hexagonal binned plot with histograms on axes
@@ -91,7 +90,6 @@ def timePlots(df, path):
 		data=dfs_sparse,
 		space=0,
 		size=10,
-		joint_kws={"s": 1},
 		xlim=(0, maxtime))
 	g.plot_joint(plt.scatter, color="#4CB391")
 	g.ax_joint.set_xticks([i * 3600 for i in ticks])
@@ -106,7 +104,7 @@ def timePlots(df, path):
 		data=dfs_sparse,
 		space=0,
 		size=10,
-		xlim=(0, dfs_sparse.time_h.max()))
+		xlim=(0, maxtime))
 	g.plot_joint(plt.scatter, color="#4CB391")
 	g.ax_joint.set_xticks([i * 3600 for i in ticks])
 	g.ax_joint.set_xticklabels(ticks)
@@ -121,7 +119,7 @@ def timePlots(df, path):
 		data=dfs_sparse,
 		space=0,
 		size=10,
-		xlim=(0, dfs_sparse.time_h.max()),
+		xlim=(0, maxtime),
 		ylim=(0, dfs_sparse.tail(1)["cumyield_gb"].item()))
 	g.plot_joint(plt.scatter, color="#4CB391")
 	g.ax_joint.set_xticks([i * 3600 for i in ticks])

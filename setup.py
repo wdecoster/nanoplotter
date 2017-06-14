@@ -4,11 +4,11 @@ from setuptools import setup, find_packages
 from codecs import open
 from os import path
 
-here = path.abspath(path.dirname(__file__))
+exec(open('nanoplotter/version.py').read())
 
 setup(
     name='nanoplotter',
-    version='0.10.0',
+    version=__version__,
     description='Plotting functions of Oxford Nanopore sequencing data',
     long_description='Plotting functions of Oxford Nanopore sequencing data.',
     url='https://github.com/wdecoster/nanoplotter',
