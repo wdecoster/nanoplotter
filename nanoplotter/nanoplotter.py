@@ -174,17 +174,24 @@ def lengthPlots(array, name, path, n50, log=False):
 	plt.close("all")
 
 
+def makeLayout():
+	'''
+	Make the layout of the MinION flowcell, based on https://bioinformatics.stackexchange.com/a/749/681
+	'''
+	layoutlist = []
+	for i, j in zip([33, 481, 417, 353, 289, 225, 161, 97], [8, 456, 392, 328, 264, 200, 136, 72]):
+		for n in range(4):
+			layoutlist.append(list(range(i+n*8, (i+n*8)+8, 1)) + list(range(j+n*8, (j+n*8)-8, -1)))
+	return np.array(layoutlist)
+
+
 def spatialHeatmap(array, title, path, colour):
 	'''
 	Plotting function
 	Taking channel information and creating post run channel activity plots
 	'''
 	logging.info("Creating activity maps for {} using statistics from {} reads.".format(title.lower(), array.size))
-	layout = np.array([
-		range(125, 0, -4), range(126, 1, -4), range(127, 2, -4), range(128, 3, -4),
-		range(253, 128, -4), range(254, 129, -4), range(255, 130, -4), range(256, 131, -4),
-		range(381, 256, -4), range(382, 257, -4), range(383, 258, -4), range(384, 259, -4),
-		range(509, 384, -4), range(510, 385, -4), range(511, 386, -4), range(512, 387, -4)])
+	layout = makeLayout()
 	activityData = np.zeros((16, 32))
 	valueCounts = pd.value_counts(pd.Series(array))
 	for entry in valueCounts.keys():
