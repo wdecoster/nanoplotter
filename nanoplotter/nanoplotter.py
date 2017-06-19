@@ -182,7 +182,7 @@ def makeLayout():
 	for i, j in zip([33, 481, 417, 353, 289, 225, 161, 97], [8, 456, 392, 328, 264, 200, 136, 72]):
 		for n in range(4):
 			layoutlist.append(list(range(i+n*8, (i+n*8)+8, 1)) + list(range(j+n*8, (j+n*8)-8, -1)))
-	return np.array(layoutlist)
+	return np.array(layoutlist).transpose()
 
 
 def spatialHeatmap(array, title, path, colour):
@@ -192,7 +192,7 @@ def spatialHeatmap(array, title, path, colour):
 	'''
 	logging.info("Creating activity maps for {} using statistics from {} reads.".format(title.lower(), array.size))
 	layout = makeLayout()
-	activityData = np.zeros((32, 16))
+	activityData = np.zeros((16, 32))
 	valueCounts = pd.value_counts(pd.Series(array))
 	for entry in valueCounts.keys():
 		activityData[np.where(layout == entry)] = valueCounts[entry]
@@ -200,8 +200,8 @@ def spatialHeatmap(array, title, path, colour):
 	plt.figure()
 	ax = sns.heatmap(
 		data=activityData,
-		xticklabels=range(1, 17),
-		yticklabels=range(1, 33),
+		xticklabels=range(1, 33),
+		yticklabels=range(1, 17),
 		square=True,
 		cbar_kws={"orientation": "horizontal"},
 		cmap=colour,
