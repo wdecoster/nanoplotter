@@ -200,8 +200,8 @@ def spatialHeatmap(array, title, path, colour):
 	plt.figure()
 	ax = sns.heatmap(
 		data=activityData,
-		xticklabels=range(1, 33),
-		yticklabels=range(1, 17),
+		xticklabels=range(1, 17),
+		yticklabels=range(1, 33),
 		square=True,
 		cbar_kws={"orientation": "horizontal"},
 		cmap=colour,
