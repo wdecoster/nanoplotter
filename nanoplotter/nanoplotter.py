@@ -192,10 +192,11 @@ def spatialHeatmap(array, title, path, colour):
 	'''
 	logging.info("Creating activity maps for {} using statistics from {} reads.".format(title.lower(), array.size))
 	layout = makeLayout()
-	activityData = np.zeros((16, 32))
+	activityData = np.zeros((32, 16))
 	valueCounts = pd.value_counts(pd.Series(array))
 	for entry in valueCounts.keys():
 		activityData[np.where(layout == entry)] = valueCounts[entry]
+
 	plt.figure()
 	ax = sns.heatmap(
 		data=activityData,
