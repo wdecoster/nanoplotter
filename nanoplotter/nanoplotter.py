@@ -3,15 +3,31 @@
 from __future__ import division
 import time
 import logging
+import os
+import sys
 import pandas as pd
 import numpy as np
 from scipy import stats
 import matplotlib.pyplot as plt
+from matplotlib import colors as mcolors
 import seaborn as sns
 from .version import __version__
 
 
-def scatter(x, y, names, path, stat=None, log=False, minvalx=0, minvaly=0):
+def checkvalidColor(color):
+	'''
+	Check if the color provided by the user is valid
+	If color is invalid the default is returned.
+	'''
+	if color in mcolors.CSS4_COLORS.keys():
+		return color
+	else:
+		logging.info("Invalid color {}, using default.".format(color))
+		sys.stderr.write("Invalid color {}, using default.\n".format(color))
+		return "#4CB391"
+
+
+def scatter(x, y, names, path, color, stat=None, log=False, minvalx=0, minvaly=0):
 	'''
 	Plotting functionq
 	Create three types of joint plots of length vs quality, containing marginal summaries
@@ -27,7 +43,7 @@ def scatter(x, y, names, path, stat=None, log=False, minvalx=0, minvaly=0):
 		x=x,
 		y=y,
 		kind="hex",
-		color="#4CB391",
+		color=color,
 		stat_func=stat,
 		space=0,
 		xlim=(minvalx, maxvalx),
@@ -42,7 +58,7 @@ def scatter(x, y, names, path, stat=None, log=False, minvalx=0, minvaly=0):
 		x=x,
 		y=y,
 		kind="scatter",
-		color="#4CB391",
+		color=color,
 		stat_func=stat,
 		xlim=(minvalx, maxvalx),
 		ylim=(minvaly, maxvaly),
@@ -62,7 +78,7 @@ def scatter(x, y, names, path, stat=None, log=False, minvalx=0, minvaly=0):
 		xlim=(minvalx, maxvalx),
 		ylim=(minvaly, maxvaly),
 		space=0,
-		color="#4CB391",
+		color=color,
 		stat_func=stat,
 		shade_lowest=False,
 		size=10)
@@ -73,7 +89,7 @@ def scatter(x, y, names, path, stat=None, log=False, minvalx=0, minvaly=0):
 	plt.close("all")
 
 
-def timePlots(df, path):
+def timePlots(df, path, color):
 	'''
 	Plotting function
 	Making plots of time vs read length, time vs quality and cumulative yield
@@ -91,10 +107,10 @@ def timePlots(df, path):
 		space=0,
 		size=10,
 		xlim=(0, maxtime))
-	g.plot_joint(plt.scatter, color="#4CB391")
+	g.plot_joint(plt.scatter, color=color)
 	g.ax_joint.set_xticks([i * 3600 for i in ticks])
 	g.ax_joint.set_xticklabels(ticks)
-	g.ax_marg_y.hist(dfs_sparse['quals'].dropna(), orientation="horizontal", color="#4CB391")
+	g.ax_marg_y.hist(dfs_sparse['quals'].dropna(), orientation="horizontal", color=color)
 	g.set_axis_labels('Run tim (hours)', 'Median average basecall quality')
 	g.savefig(path + "TimeQualityScatterPlot.png", format='png', dpi=100)
 
@@ -105,10 +121,10 @@ def timePlots(df, path):
 		space=0,
 		size=10,
 		xlim=(0, maxtime))
-	g.plot_joint(plt.scatter, color="#4CB391")
+	g.plot_joint(plt.scatter, color=color)
 	g.ax_joint.set_xticks([i * 3600 for i in ticks])
 	g.ax_joint.set_xticklabels(ticks)
-	g.ax_marg_y.hist(dfs_sparse["lengths"].dropna(), orientation="horizontal", color="#4CB391")
+	g.ax_marg_y.hist(dfs_sparse["lengths"].dropna(), orientation="horizontal", color=color)
 	g.set_axis_labels('Run tim (hours)', 'Median read length')
 	g.savefig(path + "TimeLengthScatterPlot.png", format='png', dpi=100)
 
@@ -121,7 +137,7 @@ def timePlots(df, path):
 		size=10,
 		xlim=(0, maxtime),
 		ylim=(0, dfs_sparse.tail(1)["cumyield_gb"].item()))
-	g.plot_joint(plt.scatter, color="#4CB391")
+	g.plot_joint(plt.scatter, color=color)
 	g.ax_joint.set_xticks([i * 3600 for i in ticks])
 	g.ax_joint.set_xticklabels(ticks)
 	g.set_axis_labels('Run tim (hours)', 'Cumulative yield in gigabase')
@@ -129,7 +145,7 @@ def timePlots(df, path):
 	plt.close("all")
 
 
-def lengthPlots(array, name, path, n50, log=False):
+def lengthPlots(array, name, path, n50, color, log=False):
 	'''
 	Plotting function
 	Create density plot and histogram based on a numpy array (read lengths or transformed read lengths)
@@ -145,7 +161,7 @@ def lengthPlots(array, name, path, n50, log=False):
 		a=array,
 		kde=True,
 		hist=False,
-		color="#4CB391",
+		color=color,
 		kde_kws={"label": name, "clip": (0, maxvalx)})
 	if log:
 		ticks = [10**i for i in range(10) if not 10**i > 10**math.ceil(math.log(10**maxvalx,10))]
@@ -158,7 +174,7 @@ def lengthPlots(array, name, path, n50, log=False):
 		a=array,
 		kde=False,
 		hist=True,
-		color="#4CB391")
+		color=color)
 	if log:
 		ax.set(
 			xticks=np.log10(ticks),
@@ -185,7 +201,7 @@ def makeLayout():
 	return np.array(layoutlist).transpose()
 
 
-def spatialHeatmap(array, title, path, colour):
+def spatialHeatmap(array, title, path, color):
 	'''
 	Plotting function
 	Taking channel information and creating post run channel activity plots
@@ -204,7 +220,7 @@ def spatialHeatmap(array, title, path, colour):
 		yticklabels=range(1, 17),
 		square=True,
 		cbar_kws={"orientation": "horizontal"},
-		cmap=colour,
+		cmap=color,
 		linewidths=0.20)
 	ax.set_title(title)
 	fig = ax.get_figure()
