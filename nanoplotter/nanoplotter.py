@@ -19,7 +19,7 @@ def checkvalidColor(color):
 	Check if the color provided by the user is valid
 	If color is invalid the default is returned.
 	'''
-	if color in mcolors.CSS4_COLORS.keys():
+	if color in [mcolors.CSS4_COLORS.keys() + "#4CB391":
 		return color
 	else:
 		logging.info("Invalid color {}, using default.".format(color))
