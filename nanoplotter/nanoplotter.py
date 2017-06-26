@@ -12,18 +12,19 @@ import matplotlib.pyplot as plt
 from matplotlib import colors as mcolors
 import seaborn as sns
 from .version import __version__
-
+import math
 
 def checkvalidColor(color):
 	'''
 	Check if the color provided by the user is valid
 	If color is invalid the default is returned.
 	'''
-	if color in [mcolors.CSS4_COLORS.keys() + "#4CB391":
+	if color in list(mcolors.CSS4_COLORS.keys()) + ["#4CB391"]:
+		logging.info("Nanoplotter: Valid color {}.".format(color))
 		return color
 	else:
 		logging.info("Invalid color {}, using default.".format(color))
-		sys.stderr.write("Invalid color {}, using default.\n".format(color))
+		sys.stderr.write("Nanoplotter: Invalid color {}, using default.\n".format(color))
 		return "#4CB391"
 
 
@@ -35,7 +36,7 @@ def scatter(x, y, names, path, color, stat=None, log=False, minvalx=0, minvaly=0
 	-A hexagonal binned plot with histograms on axes
 	-A kernel density plot with density curves on axes, subsampled to 10000 reads if required
 	'''
-	logging.info("Creating {} vs {} plots using statistics from {} reads.".format(names[0], names[1], x.size))
+	logging.info("Nanoplotter: Creating {} vs {} plots using statistics from {} reads.".format(names[0], names[1], x.size))
 	sns.set(style="ticks")
 	maxvalx = np.amax(x)
 	maxvaly = np.amax(y)
@@ -94,6 +95,7 @@ def timePlots(df, path, color):
 	Plotting function
 	Making plots of time vs read length, time vs quality and cumulative yield
 	'''
+	logging.info("Nanoplotter: Creating timeplots.")
 	dfs_sparse = df.sample(min(2000, len(df.index))).sort_values("start_time")
 	dfs_sparse["time"] = dfs_sparse["start_time"].astype('timedelta64[s]')
 	dfs_sparse["cumyield_gb"] = dfs_sparse["lengths"].cumsum() / 10**9
@@ -150,12 +152,8 @@ def lengthPlots(array, name, path, n50, color, log=False):
 	Plotting function
 	Create density plot and histogram based on a numpy array (read lengths or transformed read lengths)
 	'''
-	import math
+	logging.info("Nanoplotter: Creating length plots for {} from {} reads with read length N50 of {}.".format(name, array.size, n50))
 	maxvalx = np.amax(array)
-	if log:
-		logging.info("Creating length plots for {} from {} reads with read length N50 of {}.".format(name, array.size, n50))
-	else:
-		logging.info("Creating length plots for {} from {} reads with read length N50 of {}.".format(name, array.size, n50))
 
 	ax = sns.distplot(
 		a=array,
@@ -206,7 +204,7 @@ def spatialHeatmap(array, title, path, color):
 	Plotting function
 	Taking channel information and creating post run channel activity plots
 	'''
-	logging.info("Creating activity maps for {} using statistics from {} reads.".format(title.lower(), array.size))
+	logging.info("Nanoplotter: Creating activity map for {} using statistics from {} reads.".format(title.lower(), array.size))
 	layout = makeLayout()
 	activityData = np.zeros((16, 32))
 	valueCounts = pd.value_counts(pd.Series(array))
