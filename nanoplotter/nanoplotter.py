@@ -23,12 +23,28 @@ def checkvalidColor(color):
 		logging.info("Nanoplotter: Valid color {}.".format(color))
 		return color
 	else:
-		logging.info("Invalid color {}, using default.".format(color))
-		sys.stderr.write("Nanoplotter: Invalid color {}, using default.\n".format(color))
+		logging.info("Nanoplotter: Invalid color {}, using default.".format(color))
+		sys.stderr.write("Invalid color {}, using default.\n".format(color))
 		return "#4CB391"
 
 
-def scatter(x, y, names, path, color, stat=None, log=False, minvalx=0, minvaly=0):
+def checkvalidFormat(format):
+	'''
+	Check if the specified format is valid.
+	If format is invalid the default is returned.
+	Probably installation-dependent
+	'''
+	fig = plt.figure()
+	if format in list(fig.canvas.get_supported_filetypes().keys()):
+		logging.info("Nanoplotter: valid output format {}".format(format))
+		return format
+	else:
+		logging.info("Nanoplotter: invalid output format {}".format(format))
+		sys.stderr.write("Invalid format {}, using default.\n".format(format))
+		return ".png"
+
+
+def scatter(x, y, names, path, color, format, plots, stat=None, log=False, minvalx=0, minvaly=0):
 	'''
 	Plotting functionq
 	Create three types of joint plots of length vs quality, containing marginal summaries
@@ -40,57 +56,59 @@ def scatter(x, y, names, path, color, stat=None, log=False, minvalx=0, minvaly=0
 	sns.set(style="ticks")
 	maxvalx = np.amax(x)
 	maxvaly = np.amax(y)
-	plot = sns.jointplot(
-		x=x,
-		y=y,
-		kind="hex",
-		color=color,
-		stat_func=stat,
-		space=0,
-		xlim=(minvalx, maxvalx),
-		ylim=(minvaly, maxvaly),
-		size=10)
-	plot.set_axis_labels(names[0], names[1])
-	if log:
-		plot.ax_joint.set_xticklabels(10**plot.ax_joint.get_xticks().astype(int))
-	plot.savefig(path + "_hex.png", format='png', dpi=100)
+	if plots["hex"]:
+		plot = sns.jointplot(
+			x=x,
+			y=y,
+			kind="hex",
+			color=color,
+			stat_func=stat,
+			space=0,
+			xlim=(minvalx, maxvalx),
+			ylim=(minvaly, maxvaly),
+			size=10)
+		plot.set_axis_labels(names[0], names[1])
+		if log:
+			plot.ax_joint.set_xticklabels(10**plot.ax_joint.get_xticks().astype(int))
+		plot.savefig(path + "_hex." + format, format=format, dpi=100)
 	sns.set(style="darkgrid")
-	plot = sns.jointplot(
-		x=x,
-		y=y,
-		kind="scatter",
-		color=color,
-		stat_func=stat,
-		xlim=(minvalx, maxvalx),
-		ylim=(minvaly, maxvaly),
-		space=0,
-		size=10,
-		joint_kws={"s": 1})
-	plot.set_axis_labels(names[0], names[1])
-	if log:
-		plot.ax_joint.set_xticklabels(10**plot.ax_joint.get_xticks().astype(int))
-	plot.savefig(path + "_scatter.png", format='png', dpi=100)
-
-	plot = sns.jointplot(
-		x=x,
-		y=y,
-		kind="kde",
-		clip=((0, np.Inf), (0, np.Inf)),
-		xlim=(minvalx, maxvalx),
-		ylim=(minvaly, maxvaly),
-		space=0,
-		color=color,
-		stat_func=stat,
-		shade_lowest=False,
-		size=10)
-	plot.set_axis_labels(names[0], names[1])
-	if log:
-		plot.ax_joint.set_xticklabels(10**plot.ax_joint.get_xticks().astype(int))
-	plot.savefig(path + "_kde.png", format='png', dpi=100)
+	if plots["dot"]:
+		plot = sns.jointplot(
+			x=x,
+			y=y,
+			kind="scatter",
+			color=color,
+			stat_func=stat,
+			xlim=(minvalx, maxvalx),
+			ylim=(minvaly, maxvaly),
+			space=0,
+			size=10,
+			joint_kws={"s": 1})
+		plot.set_axis_labels(names[0], names[1])
+		if log:
+			plot.ax_joint.set_xticklabels(10**plot.ax_joint.get_xticks().astype(int))
+		plot.savefig(path + "_dot." + format, format=format, dpi=100)
+	if plots["kde"]:
+		plot = sns.jointplot(
+			x=x,
+			y=y,
+			kind="kde",
+			clip=((0, np.Inf), (0, np.Inf)),
+			xlim=(minvalx, maxvalx),
+			ylim=(minvaly, maxvaly),
+			space=0,
+			color=color,
+			stat_func=stat,
+			shade_lowest=False,
+			size=10)
+		plot.set_axis_labels(names[0], names[1])
+		if log:
+			plot.ax_joint.set_xticklabels(10**plot.ax_joint.get_xticks().astype(int))
+		plot.savefig(path + "_kde." + format, format=format, dpi=1000)
 	plt.close("all")
 
 
-def timePlots(df, path, color):
+def timePlots(df, path, color, format):
 	'''
 	Plotting function
 	Making plots of time vs read length, time vs quality and cumulative yield
@@ -114,7 +132,7 @@ def timePlots(df, path, color):
 	g.ax_joint.set_xticklabels(ticks)
 	g.ax_marg_y.hist(dfs_sparse['quals'].dropna(), orientation="horizontal", color=color)
 	g.set_axis_labels('Run tim (hours)', 'Median average basecall quality')
-	g.savefig(path + "TimeQualityScatterPlot.png", format='png', dpi=100)
+	g.savefig(path + "TimeQualityScatterPlot." + format, format=format, dpi=100)
 
 	g = sns.JointGrid(
 		x='time',
@@ -128,7 +146,7 @@ def timePlots(df, path, color):
 	g.ax_joint.set_xticklabels(ticks)
 	g.ax_marg_y.hist(dfs_sparse["lengths"].dropna(), orientation="horizontal", color=color)
 	g.set_axis_labels('Run tim (hours)', 'Median read length')
-	g.savefig(path + "TimeLengthScatterPlot.png", format='png', dpi=100)
+	g.savefig(path + "TimeLengthScatterPlot." + format, format=format, dpi=100)
 
 
 	g = sns.JointGrid(
@@ -143,11 +161,11 @@ def timePlots(df, path, color):
 	g.ax_joint.set_xticks([i * 3600 for i in ticks])
 	g.ax_joint.set_xticklabels(ticks)
 	g.set_axis_labels('Run tim (hours)', 'Cumulative yield in gigabase')
-	g.savefig(path + "CumulativeYieldPlot.png", format='png', dpi=100)
+	g.savefig(path + "CumulativeYieldPlot." + format, format=format, dpi=100)
 	plt.close("all")
 
 
-def lengthPlots(array, name, path, n50, color, log=False):
+def lengthPlots(array, name, path, n50, color, format, log=False):
 	'''
 	Plotting function
 	Create density plot and histogram based on a numpy array (read lengths or transformed read lengths)
@@ -165,7 +183,7 @@ def lengthPlots(array, name, path, n50, color, log=False):
 		ticks = [10**i for i in range(10) if not 10**i > 10**math.ceil(math.log(10**maxvalx,10))]
 		ax.set(xticks=np.log10(ticks), xticklabels=ticks)
 	fig = ax.get_figure()
-	fig.savefig(path + "DensityCurve" + name.replace(' ', '') + ".png", format='png', dpi=100)
+	fig.savefig(path + "DensityCurve" + name.replace(' ', '') + "." + format, format=format, dpi=100)
 	plt.close("all")
 
 	ax = sns.distplot(
@@ -184,7 +202,7 @@ def lengthPlots(array, name, path, n50, color, log=False):
 		plt.annotate('N50', xy=(n50, np.amax([h.get_height() for h in ax.patches])), size=8)
 	ax.set(xlabel='Read length', ylabel='Number of reads')
 	fig = ax.get_figure()
-	fig.savefig(path + "Histogram" + name.replace(' ', '') + ".png", format='png', dpi=100)
+	fig.savefig(path + "Histogram" + name.replace(' ', '') + "." + format, format=format, dpi=100)
 	plt.close("all")
 
 
@@ -199,7 +217,7 @@ def makeLayout():
 	return np.array(layoutlist).transpose()
 
 
-def spatialHeatmap(array, title, path, color):
+def spatialHeatmap(array, title, path, color, format):
 	'''
 	Plotting function
 	Taking channel information and creating post run channel activity plots
@@ -222,5 +240,5 @@ def spatialHeatmap(array, title, path, color):
 		linewidths=0.20)
 	ax.set_title(title)
 	fig = ax.get_figure()
-	fig.savefig(path + ".png", format='png', dpi=100)
+	fig.savefig(path + "." + format, format=format, dpi=100)
 	plt.close("all")
