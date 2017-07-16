@@ -27,5 +27,5 @@ setup(
     ],
     keywords='nanopore sequencing plotting quality control',
     packages=find_packages(),
-    install_requires=['pandas', 'numpy', 'scipy', 'matplotlib', 'seaborn'],
+    install_requires=['pandas', 'numpy', 'scipy', 'matplotlib>=2.0.0', 'seaborn'],
     package_dir={'nanoplotter': 'nanoplotter'})
