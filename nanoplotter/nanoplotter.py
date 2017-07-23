@@ -114,9 +114,10 @@ def timePlots(df, path, color, format):
 	Making plots of time vs read length, time vs quality and cumulative yield
 	'''
 	logging.info("Nanoplotter: Creating timeplots.")
-	dfs_sparse = df.sample(min(2000, len(df.index))).sort_values("start_time")
+	dfs = df.sort_values("start_time")
+	dfs["cumyield_gb"] = dfs["lengths"].cumsum() / 10**9
+	dfs_sparse = dfs.sample(min(2000, len(df.index)))
 	dfs_sparse["time"] = dfs_sparse["start_time"].astype('timedelta64[s]')
-	dfs_sparse["cumyield_gb"] = dfs_sparse["lengths"].cumsum() / 10**9
 	maxtime = dfs_sparse.time.max()
 	ticks = [int(i) for i in range(100) if not i > (maxtime / 3600)]
 
@@ -147,21 +148,23 @@ def timePlots(df, path, color, format):
 	g.ax_marg_y.hist(dfs_sparse["lengths"].dropna(), orientation="horizontal", color=color)
 	g.set_axis_labels('Run tim (hours)', 'Median read length')
 	g.savefig(path + "TimeLengthScatterPlot." + format, format=format, dpi=100)
+	plt.close("all")
 
-
-	g = sns.JointGrid(
+	ax = sns.regplot(
 		x='time',
 		y="cumyield_gb",
 		data=dfs_sparse,
-		space=0,
-		size=10,
-		xlim=(0, maxtime),
-		ylim=(0, dfs_sparse.tail(1)["cumyield_gb"].item()))
-	g.plot_joint(plt.scatter, color=color)
-	g.ax_joint.set_xticks([i * 3600 for i in ticks])
-	g.ax_joint.set_xticklabels(ticks)
-	g.set_axis_labels('Run tim (hours)', 'Cumulative yield in gigabase')
-	g.savefig(path + "CumulativeYieldPlot." + format, format=format, dpi=100)
+		x_ci=None,
+		fit_reg=False,
+		color=color,
+		scatter_kws={"s": 5})
+	ax.set(
+		xticks=[i * 3600 for i in ticks],
+		xticklabels=ticks,
+		xlabel='Run tim (hours)',
+		ylabel='Cumulative yield in gigabase')
+	fig = ax.get_figure()
+	fig.savefig(path + "CumulativeYieldPlot." + format, format=format, dpi=100)
 	plt.close("all")
 
 
