@@ -3,15 +3,16 @@ from setuptools import setup, find_packages
 # To use a consistent encoding
 from codecs import open
 from os import path
-import pypandoc
 
 exec(open('nanoplotter/version.py').read())
+here = path.abspath(path.dirname(__file__))
+
 
 setup(
     name='nanoplotter',
     version=__version__,
     description='Plotting functions of Oxford Nanopore sequencing data',
-    long_description=pypandoc.convert(path.join(here, 'README.md'), 'rst'),
+    long_description=open(path.join(here, "README.rst")).read(),
     url='https://github.com/wdecoster/nanoplotter',
     author='Wouter De Coster',
     author_email='decosterwouter@gmail.com',
