@@ -17,7 +17,7 @@ This module provides functions for plotting data extracted from Oxford Nanopore 
 pip install nanoplotter
 ```
 or  
-![install with conda](https://anaconda.org/bioconda/nanoplotter/badges/installer/conda.svg)
+[![install with conda](https://anaconda.org/bioconda/nanoplotter/badges/installer/conda.svg)](https://anaconda.org/bioconda/nanoplotter)
 ```
 conda install -c bioconda nanoplotter
 ```
