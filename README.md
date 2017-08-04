@@ -21,3 +21,6 @@ or
 ```
 conda install -c bioconda nanoplotter
 ```
+
+## STATUS
+[![Build Status](https://travis-ci.org/wdecoster/nanoplotter.svg?branch=master)](https://travis-ci.org/wdecoster/nanoplotter)
