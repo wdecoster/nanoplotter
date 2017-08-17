@@ -1,9 +1,7 @@
 # wdecoster
 
 from __future__ import division
-import time
 import logging
-import os
 import sys
 import pandas as pd
 import numpy as np
@@ -11,7 +9,6 @@ from scipy import stats
 import matplotlib.pyplot as plt
 from matplotlib import colors as mcolors
 import seaborn as sns
-from .version import __version__
 import math
 
 def checkvalidColor(color):
@@ -28,23 +25,23 @@ def checkvalidColor(color):
 		return "#4CB391"
 
 
-def checkvalidFormat(format):
+def checkvalidFormat(figformat):
 	'''
 	Check if the specified format is valid.
 	If format is invalid the default is returned.
 	Probably installation-dependent
 	'''
 	fig = plt.figure()
-	if format in list(fig.canvas.get_supported_filetypes().keys()):
-		logging.info("Nanoplotter: valid output format {}".format(format))
-		return format
+	if figformat in list(fig.canvas.get_supported_filetypes().keys()):
+		logging.info("Nanoplotter: valid output format {}".format(figformat))
+		return figformat
 	else:
-		logging.info("Nanoplotter: invalid output format {}".format(format))
-		sys.stderr.write("Invalid format {}, using default.\n".format(format))
-		return ".png"
+		logging.info("Nanoplotter: invalid output format {}".format(figformat))
+		sys.stderr.write("Invalid format {}, using default.\n".format(figformat))
+		return "png"
 
 
-def scatter(x, y, names, path, color, format, plots, stat=None, log=False, minvalx=0, minvaly=0):
+def scatter(x, y, names, path, color, figformat, plots, stat=None, log=False, minvalx=0, minvaly=0):
 	'''
 	Plotting functionq
 	Create three types of joint plots of length vs quality, containing marginal summaries
@@ -70,7 +67,7 @@ def scatter(x, y, names, path, color, format, plots, stat=None, log=False, minva
 		plot.set_axis_labels(names[0], names[1])
 		if log:
 			plot.ax_joint.set_xticklabels(10**plot.ax_joint.get_xticks().astype(int))
-		plot.savefig(path + "_hex." + format, format=format, dpi=100)
+		plot.savefig(path + "_hex." + figformat, format=figformat, dpi=100)
 	sns.set(style="darkgrid")
 	if plots["dot"]:
 		plot = sns.jointplot(
@@ -87,7 +84,7 @@ def scatter(x, y, names, path, color, format, plots, stat=None, log=False, minva
 		plot.set_axis_labels(names[0], names[1])
 		if log:
 			plot.ax_joint.set_xticklabels(10**plot.ax_joint.get_xticks().astype(int))
-		plot.savefig(path + "_dot." + format, format=format, dpi=100)
+		plot.savefig(path + "_dot." + figformat, format=figformat, dpi=100)
 	if plots["kde"]:
 		plot = sns.jointplot(
 			x=x,
@@ -104,11 +101,11 @@ def scatter(x, y, names, path, color, format, plots, stat=None, log=False, minva
 		plot.set_axis_labels(names[0], names[1])
 		if log:
 			plot.ax_joint.set_xticklabels(10**plot.ax_joint.get_xticks().astype(int))
-		plot.savefig(path + "_kde." + format, format=format, dpi=1000)
+		plot.savefig(path + "_kde." + figformat, format=figformat, dpi=1000)
 	plt.close("all")
 
 
-def timePlots(df, path, color, format):
+def timePlots(df, path, color, figformat):
 	'''
 	Plotting function
 	Making plots of time vs read length, time vs quality and cumulative yield
@@ -133,7 +130,7 @@ def timePlots(df, path, color, format):
 	g.ax_joint.set_xticklabels(ticks)
 	g.ax_marg_y.hist(dfs_sparse['quals'].dropna(), orientation="horizontal", color=color)
 	g.set_axis_labels('Run tim (hours)', 'Median average basecall quality')
-	g.savefig(path + "TimeQualityScatterPlot." + format, format=format, dpi=100)
+	g.savefig(path + "TimeQualityScatterPlot." + figformat, format=figformat, dpi=100)
 
 	g = sns.JointGrid(
 		x='time',
@@ -147,7 +144,7 @@ def timePlots(df, path, color, format):
 	g.ax_joint.set_xticklabels(ticks)
 	g.ax_marg_y.hist(dfs_sparse["lengths"].dropna(), orientation="horizontal", color=color)
 	g.set_axis_labels('Run tim (hours)', 'Median read length')
-	g.savefig(path + "TimeLengthScatterPlot." + format, format=format, dpi=100)
+	g.savefig(path + "TimeLengthScatterPlot." + figformat, format=figformat, dpi=100)
 	plt.close("all")
 
 	ax = sns.regplot(
@@ -164,11 +161,11 @@ def timePlots(df, path, color, format):
 		xlabel='Run tim (hours)',
 		ylabel='Cumulative yield in gigabase')
 	fig = ax.get_figure()
-	fig.savefig(path + "CumulativeYieldPlot." + format, format=format, dpi=100)
+	fig.savefig(path + "CumulativeYieldPlot." + figformat, format=figformat, dpi=100)
 	plt.close("all")
 
 
-def lengthPlots(array, name, path, n50, color, format, log=False):
+def lengthPlots(array, name, path, n50, color, figformat, log=False):
 	'''
 	Plotting function
 	Create density plot and histogram based on a numpy array (read lengths or transformed read lengths)
@@ -186,7 +183,7 @@ def lengthPlots(array, name, path, n50, color, format, log=False):
 		ticks = [10**i for i in range(10) if not 10**i > 10**math.ceil(math.log(10**maxvalx,10))]
 		ax.set(xticks=np.log10(ticks), xticklabels=ticks)
 	fig = ax.get_figure()
-	fig.savefig(path + "DensityCurve" + name.replace(' ', '') + "." + format, format=format, dpi=100)
+	fig.savefig(path + "DensityCurve" + name.replace(' ', '') + "." + figformat, format=figformat, dpi=100)
 	plt.close("all")
 
 	ax = sns.distplot(
@@ -205,7 +202,7 @@ def lengthPlots(array, name, path, n50, color, format, log=False):
 		plt.annotate('N50', xy=(n50, np.amax([h.get_height() for h in ax.patches])), size=8)
 	ax.set(xlabel='Read length', ylabel='Number of reads')
 	fig = ax.get_figure()
-	fig.savefig(path + "Histogram" + name.replace(' ', '') + "." + format, format=format, dpi=100)
+	fig.savefig(path + "Histogram" + name.replace(' ', '') + "." + figformat, format=figformat, dpi=100)
 	plt.close("all")
 
 
@@ -220,7 +217,7 @@ def makeLayout():
 	return np.array(layoutlist).transpose()
 
 
-def spatialHeatmap(array, title, path, color, format):
+def spatialHeatmap(array, title, path, color, figformat):
 	'''
 	Plotting function
 	Taking channel information and creating post run channel activity plots
@@ -243,5 +240,5 @@ def spatialHeatmap(array, title, path, color, format):
 		linewidths=0.20)
 	ax.set_title(title)
 	fig = ax.get_figure()
-	fig.savefig(path + "." + format, format=format, dpi=100)
+	fig.savefig(path + "." + figformat, format=figformat, dpi=100)
 	plt.close("all")
