@@ -5,7 +5,7 @@ import logging
 import sys
 import pandas as pd
 import numpy as np
-from scipy import stats
+#from scipy import stats
 import matplotlib.pyplot as plt
 from matplotlib import colors as mcolors
 import seaborn as sns
