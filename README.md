@@ -23,4 +23,4 @@ conda install -c bioconda nanoplotter
 ```
 
 ## STATUS
-[![Build Status](https://travis-ci.org/wdecoster/nanoplotter.svg?branch=master)](https://travis-ci.org/wdecoster/nanoplotter)
+[![Build Status](https://travis-ci.org/wdecoster/nanoplotter.svg?branch=master)](https://travis-ci.org/wdecoster/nanoplotter) [![Code Health](https://landscape.io/github/wdecoster/nanoplotter/master/landscape.svg?style=flat)](https://landscape.io/github/wdecoster/nanoplotter/master)
