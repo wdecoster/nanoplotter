@@ -117,7 +117,7 @@ def timePlots(df, path, color, figformat):
     dfs_sparse = dfs.sample(min(2000, len(df.index)))
     dfs_sparse["time"] = dfs_sparse["start_time"].astype('timedelta64[s]')
     maxtime = dfs_sparse.time.max()
-    ticks = [int(i) for i in range(100) if not i > (maxtime / 3600)]
+    ticks = [int(i) for i in range(0, 100, 2) if not i > (maxtime / 3600)]
 
     g = sns.JointGrid(
         x='time',
