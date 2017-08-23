@@ -130,7 +130,7 @@ def timePlots(df, path, color, figformat):
     g.ax_joint.set_xticks([i * 3600 for i in ticks])
     g.ax_joint.set_xticklabels(ticks)
     g.ax_marg_y.hist(dfs_sparse['quals'].dropna(), orientation="horizontal", color=color)
-    g.set_axis_labels('Run tim (hours)', 'Median average basecall quality')
+    g.set_axis_labels('Run time (hours)', 'Median average basecall quality')
     g.savefig(path + "TimeQualityScatterPlot." + figformat, format=figformat, dpi=100)
 
     g = sns.JointGrid(
@@ -144,7 +144,7 @@ def timePlots(df, path, color, figformat):
     g.ax_joint.set_xticks([i * 3600 for i in ticks])
     g.ax_joint.set_xticklabels(ticks)
     g.ax_marg_y.hist(dfs_sparse["lengths"].dropna(), orientation="horizontal", color=color)
-    g.set_axis_labels('Run tim (hours)', 'Median read length')
+    g.set_axis_labels('Run time (hours)', 'Median read length')
     g.savefig(path + "TimeLengthScatterPlot." + figformat, format=figformat, dpi=100)
     plt.close("all")
 
@@ -159,7 +159,7 @@ def timePlots(df, path, color, figformat):
     ax.set(
         xticks=[i * 3600 for i in ticks],
         xticklabels=ticks,
-        xlabel='Run tim (hours)',
+        xlabel='Run time (hours)',
         ylabel='Cumulative yield in gigabase')
     fig = ax.get_figure()
     fig.savefig(path + "CumulativeYieldPlot." + figformat, format=figformat, dpi=100)
