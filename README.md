@@ -1,6 +1,11 @@
 # nanoplotter
 This module provides functions for plotting data extracted from Oxford Nanopore sequencing reads and alignments, but some of it's functions can also be used for other applications.
 
+[![Twitter URL](https://img.shields.io/twitter/url/https/twitter.com/wouter_decoster.svg?style=social&label=Follow%20%40wouter_decoster)](https://twitter.com/wouter_decoster)
+[![install with conda](https://anaconda.org/bioconda/nanoplotter/badges/installer/conda.svg)](https://anaconda.org/bioconda/nanoplotter)
+[![Build Status](https://travis-ci.org/wdecoster/nanoplotter.svg?branch=master)](https://travis-ci.org/wdecoster/nanoplotter)
+[![Code Health](https://landscape.io/github/wdecoster/nanoplotter/master/landscape.svg?style=flat)](https://landscape.io/github/wdecoster/nanoplotter/master)
+
 
 ## FUNCTIONS
 * Check if a specified color is a valid matplotlib color `checkvalidColor(color)`  
@@ -23,4 +28,5 @@ conda install -c bioconda nanoplotter
 ```
 
 ## STATUS
-[![Build Status](https://travis-ci.org/wdecoster/nanoplotter.svg?branch=master)](https://travis-ci.org/wdecoster/nanoplotter) [![Code Health](https://landscape.io/github/wdecoster/nanoplotter/master/landscape.svg?style=flat)](https://landscape.io/github/wdecoster/nanoplotter/master)
+[![Build Status](https://travis-ci.org/wdecoster/nanoplotter.svg?branch=master)](https://travis-ci.org/wdecoster/nanoplotter)
+[![Code Health](https://landscape.io/github/wdecoster/nanoplotter/master/landscape.svg?style=flat)](https://landscape.io/github/wdecoster/nanoplotter/master)
