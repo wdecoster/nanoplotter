@@ -172,8 +172,8 @@ def lengthPlots(array, name, path, n50, color, figformat, log=False):
     Create density plot and histogram based on a numpy array
     containing read lengths or transformed read lengths
     '''
-    logging.info("Nanoplotter: Creating length plots for {} from {} reads \
-                 with read length N50 of {}.".format(name, array.size, n50))
+    logging.info("Nanoplotter: Creating length plots for {}.".format(name))
+    logging.info("Nanoplotter: Using {} reads with read length N50 of {}.".format(array.size, n50))
     maxvalx = np.amax(array)
 
     ax = sns.distplot(
