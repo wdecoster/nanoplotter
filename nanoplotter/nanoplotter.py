@@ -112,7 +112,6 @@ def checkvalidTime(times):
     if not, return false and warn the user that time plots are invalid and not created
     '''
     timediff = (times.max() - times.min()).days
-    print(timediff)
     if timediff < 4:
         return True
     else:
