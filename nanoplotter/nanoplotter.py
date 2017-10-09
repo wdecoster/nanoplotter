@@ -1,4 +1,28 @@
 # wdecoster
+'''
+This module provides functions for plotting data extracted from Oxford Nanopore sequencing
+reads and alignments, but some of it's functions can also be used for other applications.
+
+
+FUNCTIONS
+* Check if a specified color is a valid matplotlib color
+checkvalidColor(color)
+* Check if a specified output format is valid
+checkvalidFormat(format)
+* Create a bivariate plot with dots, hexbins and/or kernel density estimates.
+Also arguments for specifying axis names, color and xlim/ylim
+scatter(x, y, names, path, color, format, plots, stat=None, log=False, minvalx=0, minvaly=0)
+* Create cumulative yield plot and evaluate read length and quality over time
+timePlots(df, path, color, format)
+* Create length distribution histogram and density curve
+lengthPlots(array, name, path, n50, color, format, log=False)
+* Create flowcell physical layout in numpy array
+makeLayout()
+* Present the activity (number of reads) per channel on the flowcell as a heatmap
+spatialHeatmap(array, title, path, color, format)
+
+'''
+
 
 from __future__ import division
 import logging
@@ -11,7 +35,7 @@ import seaborn as sns
 import math
 
 
-def checkvalidColor(color):
+def check_valid_color(color):
     '''
     Check if the color provided by the user is valid
     If color is invalid the default is returned.
@@ -25,7 +49,7 @@ def checkvalidColor(color):
         return "#4CB391"
 
 
-def checkvalidFormat(figformat):
+def check_valid_format(figformat):
     '''
     Check if the specified format is valid.
     If format is invalid the default is returned.
@@ -106,7 +130,7 @@ def scatter(x, y, names, path, color, figformat, plots, stat=None, log=False, mi
     plt.close("all")
 
 
-def checkvalidTime(times):
+def check_valid_time(times):
     '''
     Check if the data contains reads created within the same 96-hours timeframe
     if not, return false and warn the user that time plots are invalid and not created
@@ -122,12 +146,12 @@ def checkvalidTime(times):
         return False
 
 
-def timePlots(df, path, color, figformat):
+def time_plots(df, path, color, figformat):
     '''
     Plotting function
     Making plots of time vs read length, time vs quality and cumulative yield
     '''
-    if checkvalidTime(df["start_time"]):
+    if check_valid_time(df["start_time"]):
         logging.info("Nanoplotter: Creating timeplots.")
         dfs = df.sort_values("start_time")
         dfs["cumyield_gb"] = dfs["lengths"].cumsum() / 10**9
@@ -183,7 +207,7 @@ def timePlots(df, path, color, figformat):
         plt.close("all")
 
 
-def lengthPlots(array, name, path, n50, color, figformat, log=False):
+def length_plots(array, name, path, n50, color, figformat, log=False):
     '''
     Plotting function
     Create density plot and histogram based on a numpy array
@@ -229,7 +253,7 @@ def lengthPlots(array, name, path, n50, color, figformat, log=False):
     plt.close("all")
 
 
-def makeLayout():
+def make_layout():
     '''
     Make the physical layout of the MinION flowcell
     based on https://bioinformatics.stackexchange.com/a/749/681
@@ -243,14 +267,14 @@ def makeLayout():
     return np.array(layoutlist).transpose()
 
 
-def spatialHeatmap(array, title, path, color, figformat):
+def spatial_heatmap(array, title, path, color, figformat):
     '''
     Plotting function
     Taking channel information and creating post run channel activity plots
     '''
     logging.info("Nanoplotter: Creating activity map for {} using statistics from {} reads.".format(
         title.lower(), array.size))
-    layout = makeLayout()
+    layout = make_layout()
     activityData = np.zeros((16, 32))
     valueCounts = pd.value_counts(pd.Series(array))
     for entry in valueCounts.keys():
@@ -269,3 +293,10 @@ def spatialHeatmap(array, title, path, color, figformat):
     fig = ax.get_figure()
     fig.savefig(path + "." + figformat, format=figformat, dpi=100)
     plt.close("all")
+
+
+checkvalidColor = check_valid_color
+checkvalidFormat = check_valid_format
+spatialHeatmap = spatial_heatmap
+lengthPlots = length_plots
+timePlots = time_plots
