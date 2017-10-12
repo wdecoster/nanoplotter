@@ -295,8 +295,26 @@ def spatial_heatmap(array, title, path, color, figformat):
     plt.close("all")
 
 
-checkvalidColor = check_valid_color
-checkvalidFormat = check_valid_format
-spatialHeatmap = spatial_heatmap
-lengthPlots = length_plots
-timePlots = time_plots
+def violin_plot(df, y, figformat, path, color, log=False):
+    '''
+    Plotting function
+    Create a violinplot from the received DataFrame
+    The x-axis should be divided based on the 'dataset' column,
+    the y-axis is specified in the arguments
+    '''
+    logging.info("Nanoplotter: Creating violin plot for {}.".format(y)
+    ax=sns.violinplot(x="dataset", y=y, data=df)
+    maxvaly=np.amax(df[y])
+    if log:
+        ticks=[10**i for i in range(10) if not 10**i > 10**math.ceil(math.log(10**maxvaly, 10))]
+        ax.set(yticks=np.log10(ticks), yticklabels=ticks)
+    fig=ax.get_figure()
+    fig.savefig(path + "." + figformat, format=figformat, dpi=100)
+    plt.close("all")
+
+
+checkvalidColor=check_valid_color
+checkvalidFormat=check_valid_format
+spatialHeatmap=spatial_heatmap
+lengthPlots=length_plots
+timePlots=time_plots
