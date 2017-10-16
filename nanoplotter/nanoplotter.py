@@ -295,7 +295,7 @@ def spatial_heatmap(array, title, path, color, figformat):
     plt.close("all")
 
 
-def violin_plot(df, y, figformat, path, color, log=False):
+def violin_plot(df, y, figformat, path, log=False):
     '''
     Plotting function
     Create a violinplot from the received DataFrame
