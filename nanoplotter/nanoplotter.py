@@ -309,7 +309,7 @@ def violin_plot(df, y, figformat, path, log=False):
         ticks = [10**i for i in range(10) if not 10**i > 10**math.ceil(math.log(10**maxvaly, 10))]
         ax.set(yticks=np.log10(ticks), yticklabels=ticks)
     fig = ax.get_figure()
-    fig.savefig(path + "." + figformat, format=figformat, dpi=100)
+    fig.savefig(path + "NanoComp" + y + figformat, format=figformat, dpi=100)
     plt.close("all")
 
 
