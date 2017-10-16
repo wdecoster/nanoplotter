@@ -303,7 +303,7 @@ def violin_plot(df, y, figformat, path, log=False):
     the y-axis is specified in the arguments
     '''
     logging.info("Nanoplotter: Creating violin plot for {}.".format(y))
-    ax = sns.violinplot(x="dataset", y=y, data=df)
+    ax = sns.violinplot(x="dataset", y=y, data=df, inner=None, cut=0)
     maxvaly = np.amax(df[y])
     if log:
         ticks = [10**i for i in range(10) if not 10**i > 10**math.ceil(math.log(10**maxvaly, 10))]
