@@ -91,7 +91,9 @@ def scatter(x, y, names, path, color, figformat, plots, stat=None, log=False, mi
             size=10)
         plot.set_axis_labels(names[0], names[1])
         if log:
-            plot.ax_joint.set_xticklabels(10**plot.ax_joint.get_xticks().astype(int))
+            ticks = [10**i for i in range(10) if not 10**i > 10 * (10**maxvalx)]
+            plot.ax_joint.set_xticks(np.log10(ticks))
+            plot.ax_joint.set_xticklabels(ticks)
         plot.savefig(path + "_hex." + figformat, format=figformat, dpi=100)
     sns.set(style="darkgrid")
     if plots["dot"]:
@@ -108,7 +110,9 @@ def scatter(x, y, names, path, color, figformat, plots, stat=None, log=False, mi
             joint_kws={"s": 1})
         plot.set_axis_labels(names[0], names[1])
         if log:
-            plot.ax_joint.set_xticklabels(10**plot.ax_joint.get_xticks().astype(int))
+            ticks = [10**i for i in range(10) if not 10**i > 10 * (10**maxvalx)]
+            plot.ax_joint.set_xticks(np.log10(ticks))
+            plot.ax_joint.set_xticklabels(ticks)
         plot.savefig(path + "_dot." + figformat, format=figformat, dpi=100)
     if plots["kde"]:
         plot = sns.jointplot(
@@ -125,7 +129,9 @@ def scatter(x, y, names, path, color, figformat, plots, stat=None, log=False, mi
             size=10)
         plot.set_axis_labels(names[0], names[1])
         if log:
-            plot.ax_joint.set_xticklabels(10**plot.ax_joint.get_xticks().astype(int))
+            ticks = [10**i for i in range(10) if not 10**i > 10 * (10**maxvalx)]
+            plot.ax_joint.set_xticks(np.log10(ticks))
+            plot.ax_joint.set_xticklabels(ticks)
         plot.savefig(path + "_kde." + figformat, format=figformat, dpi=1000)
     plt.close("all")
 
@@ -224,7 +230,7 @@ def length_plots(array, name, path, n50, color, figformat, log=False):
         color=color,
         kde_kws={"label": name, "clip": (0, maxvalx)})
     if log:
-        ticks = [10**i for i in range(10) if not 10**i > 10**math.ceil(math.log(10**maxvalx, 10))]
+        ticks = [10**i for i in range(10) if not 10**i > 10 * (10**maxvalx)]
         ax.set(xticks=np.log10(ticks), xticklabels=ticks)
     fig = ax.get_figure()
     fig.savefig(path + "DensityCurve" + name.replace(' ', '') +
