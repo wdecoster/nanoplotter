@@ -304,9 +304,9 @@ def violin_plot(df, y, figformat, path, log=False):
     '''
     logging.info("Nanoplotter: Creating violin plot for {}.".format(y))
     ax = sns.violinplot(x="dataset", y=y, data=df, inner=None, cut=0)
-    maxvaly = np.amax(df[y])
+    maxvaly = 10**math.ceil(math.log(10**np.amax(df[y]), 10))
     if log:
-        ticks = [10**i for i in range(10) if not 10**i > 10**math.ceil(math.log(10**maxvaly, 10))]
+        ticks = [10**i for i in range(10) if not 10**i > maxvaly]
         ax.set(yticks=np.log10(ticks), yticklabels=ticks)
     fig = ax.get_figure()
     fig.savefig(
