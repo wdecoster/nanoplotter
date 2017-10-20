@@ -32,7 +32,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import colors as mcolors
 import seaborn as sns
-import math
 
 
 def check_valid_color(color):
