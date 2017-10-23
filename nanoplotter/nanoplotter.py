@@ -302,15 +302,19 @@ def spatial_heatmap(array, title, path, color, figformat):
     plt.close("all")
 
 
-def violin_plot(df, y, figformat, path, log=False):
+def violin_or_box_plot(df, y, figformat, path, violin=True, log=False):
     '''
     Plotting function
     Create a violinplot from the received DataFrame
     The x-axis should be divided based on the 'dataset' column,
     the y-axis is specified in the arguments
     '''
-    logging.info("Nanoplotter: Creating violin plot for {}.".format(y))
-    ax = sns.violinplot(x="dataset", y=y, data=df, inner=None, cut=0)
+    if violin:
+        logging.info("Nanoplotter: Creating violin plot for {}.".format(y))
+        ax = sns.violinplot(x="dataset", y=y, data=df, inner=None, cut=0)
+    else:
+        logging.info("Nanoplotter: Creating box plot for {}.".format(y))
+        ax = sns.boxplot(x="dataset", y=y, data=df)
     if log:
         ticks = [10**i for i in range(10) if not 10**i > 10 * (10**np.amax(df[y]))]
         ax.set(yticks=np.log10(ticks), yticklabels=ticks)
