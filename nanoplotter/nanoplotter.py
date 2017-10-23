@@ -143,10 +143,10 @@ def check_valid_time(times):
     if not, return false and warn the user that time plots are invalid and not created
     '''
     timediff = (times.max() - times.min()).days
-    if timediff < 4:
+    if timediff < 7:
         return True
     else:
-        sys.stderr.write("\nWarning: data generated is from more than 96 hours.\n")
+        sys.stderr.write("\nWarning: data generated is from more than 7 days.\n")
         sys.stderr.write("Likely this indicates you are combining multiple runs.\n")
         sys.stderr.write("As such plots based on time are invalid and therefore skipped.\n\n")
         logging.warning("Time plots not created: invalid timespan: {} days".format(str(timediff)))
@@ -165,7 +165,7 @@ def time_plots(df, path, color, figformat):
         dfs_sparse = dfs.sample(min(2000, len(df.index)))
         dfs_sparse["time"] = dfs_sparse["start_time"].astype('timedelta64[s]')
         maxtime = dfs_sparse.time.max()
-        ticks = [int(i) for i in range(0, 100, 2) if not i > (maxtime / 3600)]
+        ticks = [int(i) for i in range(0, 168, 4) if not i > (maxtime / 3600)]
 
         g = sns.JointGrid(
             x='time',
