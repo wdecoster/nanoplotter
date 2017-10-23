@@ -149,7 +149,7 @@ def check_valid_time(times):
         sys.stderr.write("\nWarning: data generated is from more than 96 hours.\n")
         sys.stderr.write("Likely this indicates you are combining multiple runs.\n")
         sys.stderr.write("As such plots based on time are invalid and therefore skipped.\n\n")
-        logging.warning("Time plots not created: invalid timespan: {}h".format(str(timediff)))
+        logging.warning("Time plots not created: invalid timespan: {} days".format(str(timediff)))
         return False
 
 
