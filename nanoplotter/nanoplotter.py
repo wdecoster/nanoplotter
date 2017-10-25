@@ -29,6 +29,8 @@ import logging
 import sys
 import pandas as pd
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib import colors as mcolors
 import seaborn as sns
@@ -141,13 +143,13 @@ def check_valid_time(times):
     if not, return false and warn the user that time plots are invalid and not created
     '''
     timediff = (times.max() - times.min()).days
-    if timediff < 4:
+    if timediff < 7:
         return True
     else:
-        sys.stderr.write("\nWarning: data generated is from more than 96 hours.\n")
+        sys.stderr.write("\nWarning: data generated is from more than 7 days.\n")
         sys.stderr.write("Likely this indicates you are combining multiple runs.\n")
         sys.stderr.write("As such plots based on time are invalid and therefore skipped.\n\n")
-        logging.warning("Time plots not created: invalid timespan: {}h".format(str(timediff)))
+        logging.warning("Time plots not created: invalid timespan: {} days".format(str(timediff)))
         return False
 
 
@@ -163,7 +165,7 @@ def time_plots(df, path, color, figformat):
         dfs_sparse = dfs.sample(min(2000, len(df.index)))
         dfs_sparse["time"] = dfs_sparse["start_time"].astype('timedelta64[s]')
         maxtime = dfs_sparse.time.max()
-        ticks = [int(i) for i in range(0, 100, 2) if not i > (maxtime / 3600)]
+        ticks = [int(i) for i in range(0, 168, 4) if not i > (maxtime / 3600)]
 
         if "quals" in df:
             g = sns.JointGrid(
@@ -301,15 +303,19 @@ def spatial_heatmap(array, title, path, color, figformat):
     plt.close("all")
 
 
-def violin_plot(df, y, figformat, path, log=False):
+def violin_or_box_plot(df, y, figformat, path, violin=True, log=False):
     '''
     Plotting function
     Create a violinplot from the received DataFrame
     The x-axis should be divided based on the 'dataset' column,
     the y-axis is specified in the arguments
     '''
-    logging.info("Nanoplotter: Creating violin plot for {}.".format(y))
-    ax = sns.violinplot(x="dataset", y=y, data=df, inner=None, cut=0)
+    if violin:
+        logging.info("Nanoplotter: Creating violin plot for {}.".format(y))
+        ax = sns.violinplot(x="dataset", y=y, data=df, inner=None, cut=0)
+    else:
+        logging.info("Nanoplotter: Creating box plot for {}.".format(y))
+        ax = sns.boxplot(x="dataset", y=y, data=df)
     if log:
         ticks = [10**i for i in range(10) if not 10**i > 10 * (10**np.amax(df[y]))]
         ax.set(yticks=np.log10(ticks), yticklabels=ticks)
