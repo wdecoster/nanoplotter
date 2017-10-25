@@ -167,19 +167,20 @@ def time_plots(df, path, color, figformat):
         maxtime = dfs_sparse.time.max()
         ticks = [int(i) for i in range(0, 168, 4) if not i > (maxtime / 3600)]
 
-        g = sns.JointGrid(
-            x='time',
-            y='quals',
-            data=dfs_sparse,
-            space=0,
-            size=10,
-            xlim=(0, maxtime))
-        g.plot_joint(plt.scatter, color=color)
-        g.ax_joint.set_xticks([i * 3600 for i in ticks])
-        g.ax_joint.set_xticklabels(ticks)
-        g.ax_marg_y.hist(dfs_sparse['quals'].dropna(), orientation="horizontal", color=color)
-        g.set_axis_labels('Run time (hours)', 'Median average basecall quality')
-        g.savefig(path + "TimeQualityScatterPlot." + figformat, format=figformat, dpi=100)
+        if "quals" in df:
+            g = sns.JointGrid(
+                x='time',
+                y='quals',
+                data=dfs_sparse,
+                space=0,
+                size=10,
+                xlim=(0, maxtime))
+            g.plot_joint(plt.scatter, color=color)
+            g.ax_joint.set_xticks([i * 3600 for i in ticks])
+            g.ax_joint.set_xticklabels(ticks)
+            g.ax_marg_y.hist(dfs_sparse['quals'].dropna(), orientation="horizontal", color=color)
+            g.set_axis_labels('Run time (hours)', 'Median average basecall quality')
+            g.savefig(path + "TimeQualityScatterPlot." + figformat, format=figformat, dpi=100)
 
         g = sns.JointGrid(
             x='time',
@@ -228,6 +229,7 @@ def length_plots(array, name, path, n50, color, figformat, log=False):
         a=array,
         kde=True,
         hist=False,
+        bins=round(int(maxvalx) / 500),
         color=color,
         kde_kws={"label": name, "clip": (0, maxvalx)})
     if log:
@@ -242,6 +244,7 @@ def length_plots(array, name, path, n50, color, figformat, log=False):
         a=array,
         kde=False,
         hist=True,
+        bins=round(int(maxvalx) / 500),
         color=color)
     if log:
         ax.set(
