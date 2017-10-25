@@ -10,3 +10,6 @@ python:
 install: "pip install nanoplotter"
 # command to run tests
 script: python -c "import nanoplotter"
+
+notifications:
+  email: false
