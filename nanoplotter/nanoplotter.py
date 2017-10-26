@@ -34,6 +34,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib import colors as mcolors
 import seaborn as sns
+from pauvre.marginplot import margin_plot
 
 
 def check_valid_color(color):
@@ -133,7 +134,22 @@ def scatter(x, y, names, path, color, figformat, plots, stat=None, log=False, mi
             ticks = [10**i for i in range(10) if not 10**i > 10 * (10**maxvalx)]
             plot.ax_joint.set_xticks(np.log10(ticks))
             plot.ax_joint.set_xticklabels(ticks)
-        plot.savefig(path + "_kde." + figformat, format=figformat, dpi=1000)
+        plot.savefig(path + "_kde." + figformat, format=figformat, dpi=100)
+    if plots["pauvre"] and names == ['Read lengths', 'Average read quality']:
+        sns.set_style("white")
+        margin_plot(df=pd.DataFrame({"length": x, "meanQual": y}),
+                    Y_AXES=False,
+                    title="Length vs Quality",
+                    plot_maxlen=None,
+                    plot_minlen=0,
+                    plot_maxqual=None,
+                    plot_minqual=0,
+                    lengthbin=None,
+                    qualbin=None,
+                    BASENAME=path + "_pauvre." + figformat,
+                    fileform=[figformat],
+                    dpi=600,
+                    TRANSPARENT=True)
     plt.close("all")
 
 
