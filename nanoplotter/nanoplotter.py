@@ -245,7 +245,7 @@ def length_plots(array, name, path, n50, color, figformat, log=False):
         a=array,
         kde=True,
         hist=False,
-        bins=round(int(maxvalx) / 500),
+        bins=round(int(maxvalx) / 100),
         color=color,
         kde_kws={"label": name, "clip": (0, maxvalx)})
     if log:
@@ -260,7 +260,7 @@ def length_plots(array, name, path, n50, color, figformat, log=False):
         a=array,
         kde=False,
         hist=True,
-        bins=round(int(maxvalx) / 500),
+        bins=round(int(maxvalx) / 100),
         color=color)
     if log:
         ax.set(
