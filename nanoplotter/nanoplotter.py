@@ -345,6 +345,10 @@ def violin_or_box_plot(df, y, figformat, path, violin=True, log=False):
     plt.close("all")
 
 
+def output_histogram(df):
+    pass
+
+
 checkvalidColor = check_valid_color
 checkvalidFormat = check_valid_format
 spatialHeatmap = spatial_heatmap
