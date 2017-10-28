@@ -345,6 +345,34 @@ def violin_or_box_plot(df, y, figformat, path, violin=True, log=False):
     plt.close("all")
 
 
+def output_barplot(df, figformat, path):
+    '''
+    Plotting function
+    Create barplots based on number of reads and total sum of nucleotides sequenced
+    '''
+    ax = sns.countplot(
+        x="dataset",
+        data=df,
+        palette="Greens")
+    ax.set(xlabel='Number of reads')
+    fig = ax.get_figure()
+    fig.savefig(
+        path + "NanoComp_number_of_reads." + figformat,
+        format=figformat,
+        dpi=100)
+    plt.close("all")
+    ax = sns.barplot(
+        x=df["dataset"].unique(),
+        y=df.groupby('dataset')['lengths'].sum(),
+        palette="Greens")
+    fig = ax.get_figure()
+    fig.savefig(
+        path + "NanoComp_total_throughput." + figformat,
+        format=figformat,
+        dpi=100)
+    plt.close("all")
+
+
 checkvalidColor = check_valid_color
 checkvalidFormat = check_valid_format
 spatialHeatmap = spatial_heatmap
