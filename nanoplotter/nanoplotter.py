@@ -345,7 +345,11 @@ def violin_or_box_plot(df, y, figformat, path, violin=True, log=False):
     plt.close("all")
 
 
-def output_histogram(df, figformat, path):
+def output_barplot(df, figformat, path):
+    '''
+    Plotting function
+    Create barplots based on number of reads and total sum of nucleotides sequenced
+    '''
     ax = sns.countplot(
         x="dataset",
         data=df,
