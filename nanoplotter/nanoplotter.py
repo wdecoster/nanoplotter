@@ -150,7 +150,8 @@ def scatter(x, y, names, path, color, figformat, plots, stat=None, log=False, mi
                     BASENAME=path + "_pauvre." + figformat,
                     fileform=[figformat],
                     dpi=600,
-                    TRANSPARENT=True)
+                    TRANSPARENT=True,
+                    QUIET=True)
     plt.close("all")
 
 
