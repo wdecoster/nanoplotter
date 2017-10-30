@@ -266,12 +266,14 @@ def length_plots(array, name, path, n50, color, figformat, log=False):
         ax.set(
             xticks=np.log10(ticks),
             xticklabels=ticks)
-        plt.axvline(np.log10(n50))
-        plt.annotate('N50', xy=(np.log10(n50), np.amax(
-            [h.get_height() for h in ax.patches])), size=8)
+        if n50:
+            plt.axvline(np.log10(n50))
+            plt.annotate('N50', xy=(np.log10(n50), np.amax(
+                [h.get_height() for h in ax.patches])), size=8)
     else:
-        plt.axvline(n50)
-        plt.annotate('N50', xy=(n50, np.amax([h.get_height() for h in ax.patches])), size=8)
+        if n50:
+            plt.axvline(n50)
+            plt.annotate('N50', xy=(n50, np.amax([h.get_height() for h in ax.patches])), size=8)
     ax.set(xlabel='Read length', ylabel='Number of reads')
     fig = ax.get_figure()
     fig.savefig(path + "Histogram" + name.replace(' ', '') +
