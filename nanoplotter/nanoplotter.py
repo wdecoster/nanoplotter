@@ -27,6 +27,7 @@ spatialHeatmap(array, title, path, color, format)
 from __future__ import division
 import logging
 import sys
+from datetime import timedelta
 import pandas as pd
 import numpy as np
 import matplotlib
@@ -153,20 +154,23 @@ def scatter(x, y, names, path, color, figformat, plots, stat=None, log=False, mi
     plt.close("all")
 
 
-def check_valid_time(times):
+def check_valid_time(df, timescol, days=5):
     '''
     Check if the data contains reads created within the same 96-hours timeframe
     if not, return false and warn the user that time plots are invalid and not created
     '''
-    timediff = (times.max() - times.min()).days
-    if timediff < 7:
-        return True
+    timediff = (df[timescol].max() - df[timescol].min()).days
+    if timediff < days:
+        return df
     else:
-        sys.stderr.write("\nWarning: data generated is from more than 7 days.\n")
+        sys.stderr.write("\nWarning: data generated is from more than {} days.\n".format(str(days)))
         sys.stderr.write("Likely this indicates you are combining multiple runs.\n")
-        sys.stderr.write("As such plots based on time are invalid and therefore skipped.\n\n")
-        logging.warning("Time plots not created: invalid timespan: {} days".format(str(timediff)))
-        return False
+        sys.stderr.write(
+            "Plots based on time are invalid and therefore truncated to first {} days.\n\n".format(
+                str(days)))
+        logging.warning("Time plots truncated to first {} days: invalid timespan: {} days".format(
+            str(days), str(timediff)))
+        return df[df[timescol] < timedelta(days=days)]
 
 
 def time_plots(df, path, color, figformat):
@@ -174,33 +178,23 @@ def time_plots(df, path, color, figformat):
     Plotting function
     Making plots of time vs read length, time vs quality and cumulative yield
     '''
-    if check_valid_time(df["start_time"]):
-        logging.info("Nanoplotter: Creating timeplots.")
-        dfs = df.sort_values("start_time")
-        dfs["cumyield_gb"] = dfs["lengths"].cumsum() / 10**9
-        dfs_sparse = dfs.sample(min(2000, len(df.index)))
-        dfs_sparse["time"] = dfs_sparse["start_time"].astype('timedelta64[s]')
-        maxtime = dfs_sparse.time.max()
-        ticks = [int(i) for i in range(0, 168, 4) if not i > (maxtime / 3600)]
+    df = check_valid_time(df, "start_time")
+    logging.info("Nanoplotter: Creating timeplots.")
+    dfs = df.sort_values("start_time")
+    dfs["cumyield_gb"] = dfs["lengths"].cumsum() / 10**9
+    dfs_sparse = dfs.sample(min(2000, len(df.index)))
+    dfs_sparse["time"] = dfs_sparse["start_time"].astype('timedelta64[s]')
+    maxtime = dfs_sparse.time.max()
+    if maxtime < 72 * 3600:
+        steps = 4
+    else:
+        steps = 8
+    ticks = [int(i) for i in range(0, 168, steps) if not i > (maxtime / 3600)]
 
-        if "quals" in df:
-            g = sns.JointGrid(
-                x='time',
-                y='quals',
-                data=dfs_sparse,
-                space=0,
-                size=10,
-                xlim=(0, maxtime))
-            g.plot_joint(plt.scatter, color=color)
-            g.ax_joint.set_xticks([i * 3600 for i in ticks])
-            g.ax_joint.set_xticklabels(ticks)
-            g.ax_marg_y.hist(dfs_sparse['quals'].dropna(), orientation="horizontal", color=color)
-            g.set_axis_labels('Run time (hours)', 'Median average basecall quality')
-            g.savefig(path + "TimeQualityScatterPlot." + figformat, format=figformat, dpi=100)
-
+    if "quals" in df:
         g = sns.JointGrid(
             x='time',
-            y="lengths",
+            y='quals',
             data=dfs_sparse,
             space=0,
             size=10,
@@ -208,27 +202,41 @@ def time_plots(df, path, color, figformat):
         g.plot_joint(plt.scatter, color=color)
         g.ax_joint.set_xticks([i * 3600 for i in ticks])
         g.ax_joint.set_xticklabels(ticks)
-        g.ax_marg_y.hist(dfs_sparse["lengths"].dropna(), orientation="horizontal", color=color)
-        g.set_axis_labels('Run time (hours)', 'Median read length')
-        g.savefig(path + "TimeLengthScatterPlot." + figformat, format=figformat, dpi=100)
-        plt.close("all")
+        g.ax_marg_y.hist(dfs_sparse['quals'].dropna(), orientation="horizontal", color=color)
+        g.set_axis_labels('Run time (hours)', 'Median average basecall quality')
+        g.savefig(path + "TimeQualityScatterPlot." + figformat, format=figformat, dpi=100)
 
-        ax = sns.regplot(
-            x='time',
-            y="cumyield_gb",
-            data=dfs_sparse,
-            x_ci=None,
-            fit_reg=False,
-            color=color,
-            scatter_kws={"s": 5})
-        ax.set(
-            xticks=[i * 3600 for i in ticks],
-            xticklabels=ticks,
-            xlabel='Run time (hours)',
-            ylabel='Cumulative yield in gigabase')
-        fig = ax.get_figure()
-        fig.savefig(path + "CumulativeYieldPlot." + figformat, format=figformat, dpi=100)
-        plt.close("all")
+    g = sns.JointGrid(
+        x='time',
+        y="lengths",
+        data=dfs_sparse,
+        space=0,
+        size=10,
+        xlim=(0, maxtime))
+    g.plot_joint(plt.scatter, color=color)
+    g.ax_joint.set_xticks([i * 3600 for i in ticks])
+    g.ax_joint.set_xticklabels(ticks)
+    g.ax_marg_y.hist(dfs_sparse["lengths"].dropna(), orientation="horizontal", color=color)
+    g.set_axis_labels('Run time (hours)', 'Median read length')
+    g.savefig(path + "TimeLengthScatterPlot." + figformat, format=figformat, dpi=100)
+    plt.close("all")
+
+    ax = sns.regplot(
+        x='time',
+        y="cumyield_gb",
+        data=dfs_sparse,
+        x_ci=None,
+        fit_reg=False,
+        color=color,
+        scatter_kws={"s": 5})
+    ax.set(
+        xticks=[i * 3600 for i in ticks],
+        xticklabels=ticks,
+        xlabel='Run time (hours)',
+        ylabel='Cumulative yield in gigabase')
+    fig = ax.get_figure()
+    fig.savefig(path + "CumulativeYieldPlot." + figformat, format=figformat, dpi=100)
+    plt.close("all")
 
 
 def length_plots(array, name, path, n50, color, figformat, log=False):
