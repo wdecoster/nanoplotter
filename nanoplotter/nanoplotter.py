@@ -183,31 +183,39 @@ def time_plots(df, path, color, figformat):
     logging.info("Nanoplotter: Creating timeplots using {} reads.".format(len(dfs)))
     dfs["cumyield_gb"] = dfs["lengths"].cumsum() / 10**9
     dfs_sparse = dfs.sample(min(2000, len(df.index)))
-    dfs_sparse["time"] = dfs_sparse["start_time"].astype('timedelta64[s]')
-    maxtime = dfs_sparse.time.max()
+    dfs_sparse["start_time"] = dfs_sparse["start_time"].astype('timedelta64[s]')  # ?! dtype float64
+    maxtime = dfs_sparse["start_time"].max()
     if maxtime < 72 * 3600:
         steps = 4
     else:
         steps = 8
     ticks = [int(i) for i in range(0, 168, steps) if not i > (maxtime / 3600)]
 
-    if "quals" in df:
-        g = sns.JointGrid(
-            x='time',
-            y='quals',
-            data=dfs_sparse,
-            space=0,
-            size=10,
-            xlim=(0, maxtime))
-        g.plot_joint(plt.scatter, color=color)
-        g.ax_joint.set_xticks([i * 3600 for i in ticks])
-        g.ax_joint.set_xticklabels(ticks)
-        g.ax_marg_y.hist(dfs_sparse['quals'].dropna(), orientation="horizontal", color=color)
-        g.set_axis_labels('Run time (hours)', 'Median average basecall quality')
-        g.savefig(path + "TimeQualityScatterPlot." + figformat, format=figformat, dpi=100)
-
+    if "quals" in dfs:
+        bins = (maxtime / 3600) / 6
+        dfs['timebin'] = pd.cut(
+            x=dfs["start_time"],
+            bins=round(bins),
+            labels=[str(i) + "-" + str(i + 6) for i in range(0, 168, 6) if not i > (maxtime / 3600)])
+        ax = sns.violinplot(
+            x="timebin",
+            y="quals",
+            data=dfs,
+            inner=None,
+            cut=0,
+            linewidth=0)
+        ax.set(
+            xlabel='Interval (hours)',
+            ylabel="Basecall quality")
+        plt.xticks(rotation=45)
+        fig = ax.get_figure()
+        fig.savefig(
+            fname=path + "TimeQualityViolinPlot." + figformat,
+            format=figformat,
+            dpi=100,
+            bbox_inches='tight')
     g = sns.JointGrid(
-        x='time',
+        x='start_time',
         y="lengths",
         data=dfs_sparse,
         space=0,
@@ -218,11 +226,14 @@ def time_plots(df, path, color, figformat):
     g.ax_joint.set_xticklabels(ticks)
     g.ax_marg_y.hist(dfs_sparse["lengths"].dropna(), orientation="horizontal", color=color)
     g.set_axis_labels('Run time (hours)', 'Median read length')
-    g.savefig(path + "TimeLengthScatterPlot." + figformat, format=figformat, dpi=100)
+    g.savefig(
+        fname=path + "TimeLengthScatterPlot." + figformat,
+        format=figformat,
+        dpi=100)
     plt.close("all")
 
     ax = sns.regplot(
-        x='time',
+        x='start_time',
         y="cumyield_gb",
         data=dfs_sparse,
         x_ci=None,
@@ -348,11 +359,13 @@ def violin_or_box_plot(df, y, figformat, path, violin=True, log=False):
     if log:
         ticks = [10**i for i in range(10) if not 10**i > 10 * (10**np.amax(df[y]))]
         ax.set(yticks=np.log10(ticks), yticklabels=ticks)
+    plt.xticks(rotation=45)
     fig = ax.get_figure()
     fig.savefig(
-        path + "NanoComp_" + y.replace(' ', '_') + '.' + figformat,
+        fname=path + "NanoComp_" + y.replace(' ', '_') + '.' + figformat,
         format=figformat,
-        dpi=100)
+        dpi=100,
+        bbox_inches='tight')
     plt.close("all")
 
 
