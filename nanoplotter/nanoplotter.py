@@ -260,12 +260,15 @@ def length_plots(array, name, path, n50, color, figformat, log=False):
     maxvalx = np.amax(array)
     logging.info("Nanoplotter: Using {} reads with read length N50 of {} and maximum of {}.".format(
         array.size, n50, maxvalx))
-
+    if log:
+        bins = None
+    else:
+        bins = round(int(maxvalx) / 100)
     ax = sns.distplot(
         a=array,
         kde=True,
         hist=False,
-        bins=round(int(maxvalx) / 100),
+        bins=bins,
         color=color,
         kde_kws={"label": name, "clip": (0, maxvalx)})
     if log:
@@ -280,7 +283,7 @@ def length_plots(array, name, path, n50, color, figformat, log=False):
         a=array,
         kde=False,
         hist=True,
-        bins=round(int(maxvalx) / 100),
+        bins=bins,
         color=color)
     if log:
         ax.set(
