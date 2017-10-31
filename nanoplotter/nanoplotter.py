@@ -247,8 +247,9 @@ def length_plots(array, name, path, n50, color, figformat, log=False):
     containing read lengths or transformed read lengths
     '''
     logging.info("Nanoplotter: Creating length plots for {}.".format(name))
-    logging.info("Nanoplotter: Using {} reads with read length N50 of {}.".format(array.size, n50))
     maxvalx = np.amax(array)
+    logging.info("Nanoplotter: Using {} reads with read length N50 of {} and maximum of {}.".format(
+        array.size, n50, maxvalx))
 
     ax = sns.distplot(
         a=array,
