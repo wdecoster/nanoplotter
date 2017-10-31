@@ -155,14 +155,14 @@ def scatter(x, y, names, path, color, figformat, plots, stat=None, log=False, mi
     plt.close("all")
 
 
-def check_valid_time(df, timescol, days=5):
+def check_valid_time_and_sort(df, timescol, days=5):
     '''
     Check if the data contains reads created within the same 96-hours timeframe
     if not, return false and warn the user that time plots are invalid and not created
     '''
     timediff = (df[timescol].max() - df[timescol].min()).days
     if timediff < days:
-        return df
+        return df.sort_values(timescol)
     else:
         sys.stderr.write("\nWarning: data generated is from more than {} days.\n".format(str(days)))
         sys.stderr.write("Likely this indicates you are combining multiple runs.\n")
@@ -171,7 +171,7 @@ def check_valid_time(df, timescol, days=5):
                 str(days)))
         logging.warning("Time plots truncated to first {} days: invalid timespan: {} days".format(
             str(days), str(timediff)))
-        return df[df[timescol] < timedelta(days=days)]
+        return df[df[timescol] < timedelta(days=days)].sort_values(timescol)
 
 
 def time_plots(df, path, color, figformat):
@@ -179,36 +179,43 @@ def time_plots(df, path, color, figformat):
     Plotting function
     Making plots of time vs read length, time vs quality and cumulative yield
     '''
-    df = check_valid_time(df, "start_time")
-    logging.info("Nanoplotter: Creating timeplots.")
-    dfs = df.sort_values("start_time")
+    dfs = check_valid_time_and_sort(df, "start_time")
+    logging.info("Nanoplotter: Creating timeplots using {} reads.".format(len(dfs)))
     dfs["cumyield_gb"] = dfs["lengths"].cumsum() / 10**9
     dfs_sparse = dfs.sample(min(2000, len(df.index)))
-    dfs_sparse["time"] = dfs_sparse["start_time"].astype('timedelta64[s]')
-    maxtime = dfs_sparse.time.max()
+    dfs_sparse["start_time"] = dfs_sparse["start_time"].astype('timedelta64[s]')  # ?! dtype float64
+    maxtime = dfs_sparse["start_time"].max()
     if maxtime < 72 * 3600:
         steps = 4
     else:
         steps = 8
     ticks = [int(i) for i in range(0, 168, steps) if not i > (maxtime / 3600)]
 
-    if "quals" in df:
-        g = sns.JointGrid(
-            x='time',
-            y='quals',
-            data=dfs_sparse,
-            space=0,
-            size=10,
-            xlim=(0, maxtime))
-        g.plot_joint(plt.scatter, color=color)
-        g.ax_joint.set_xticks([i * 3600 for i in ticks])
-        g.ax_joint.set_xticklabels(ticks)
-        g.ax_marg_y.hist(dfs_sparse['quals'].dropna(), orientation="horizontal", color=color)
-        g.set_axis_labels('Run time (hours)', 'Median average basecall quality')
-        g.savefig(path + "TimeQualityScatterPlot." + figformat, format=figformat, dpi=100)
-
+    if "quals" in dfs:
+        bins = (maxtime / 3600) / 6
+        dfs['timebin'] = pd.cut(
+            x=dfs["start_time"],
+            bins=round(bins),
+            labels=[str(i) + "-" + str(i + 6) for i in range(0, 168, 6) if not i > (maxtime / 3600)])
+        ax = sns.violinplot(
+            x="timebin",
+            y="quals",
+            data=dfs,
+            inner=None,
+            cut=0,
+            linewidth=0)
+        ax.set(
+            xlabel='Interval (hours)',
+            ylabel="Basecall quality")
+        plt.xticks(rotation=45)
+        fig = ax.get_figure()
+        fig.savefig(
+            fname=path + "TimeQualityViolinPlot." + figformat,
+            format=figformat,
+            dpi=100,
+            bbox_inches='tight')
     g = sns.JointGrid(
-        x='time',
+        x='start_time',
         y="lengths",
         data=dfs_sparse,
         space=0,
@@ -219,11 +226,14 @@ def time_plots(df, path, color, figformat):
     g.ax_joint.set_xticklabels(ticks)
     g.ax_marg_y.hist(dfs_sparse["lengths"].dropna(), orientation="horizontal", color=color)
     g.set_axis_labels('Run time (hours)', 'Median read length')
-    g.savefig(path + "TimeLengthScatterPlot." + figformat, format=figformat, dpi=100)
+    g.savefig(
+        fname=path + "TimeLengthScatterPlot." + figformat,
+        format=figformat,
+        dpi=100)
     plt.close("all")
 
     ax = sns.regplot(
-        x='time',
+        x='start_time',
         y="cumyield_gb",
         data=dfs_sparse,
         x_ci=None,
@@ -342,18 +352,31 @@ def violin_or_box_plot(df, y, figformat, path, violin=True, log=False):
     '''
     if violin:
         logging.info("Nanoplotter: Creating violin plot for {}.".format(y))
-        ax = sns.violinplot(x="dataset", y=y, data=df, inner=None, cut=0)
+        ax = sns.violinplot(
+            x="dataset",
+            y=y,
+            data=df,
+            inner=None,
+            cut=0,
+            order=df["dataset"].unique(),
+            linewidth=0)
     else:
         logging.info("Nanoplotter: Creating box plot for {}.".format(y))
-        ax = sns.boxplot(x="dataset", y=y, data=df)
+        ax = sns.boxplot(
+            x="dataset",
+            y=y,
+            data=df,
+            order=df["dataset"].unique())
     if log:
         ticks = [10**i for i in range(10) if not 10**i > 10 * (10**np.amax(df[y]))]
         ax.set(yticks=np.log10(ticks), yticklabels=ticks)
+    plt.xticks(rotation=45)
     fig = ax.get_figure()
     fig.savefig(
-        path + "NanoComp_" + y.replace(' ', '_') + '.' + figformat,
+        fname=path + "NanoComp_" + y.replace(' ', '_') + '.' + figformat,
         format=figformat,
-        dpi=100)
+        dpi=100,
+        bbox_inches='tight')
     plt.close("all")
 
 
@@ -365,23 +388,27 @@ def output_barplot(df, figformat, path):
     ax = sns.countplot(
         x="dataset",
         data=df,
-        palette="Greens")
+        order=df["dataset"].unique())
     ax.set(xlabel='Number of reads')
+    plt.xticks(rotation=45)
     fig = ax.get_figure()
     fig.savefig(
-        path + "NanoComp_number_of_reads." + figformat,
+        fname=path + "NanoComp_number_of_reads." + figformat,
         format=figformat,
-        dpi=100)
+        dpi=100,
+        bbox_inches='tight')
     plt.close("all")
     ax = sns.barplot(
         x=df["dataset"].unique(),
         y=df.groupby('dataset')['lengths'].sum(),
-        palette="Greens")
+        order=df["dataset"].unique())
+    plt.xticks(rotation=45)
     fig = ax.get_figure()
     fig.savefig(
-        path + "NanoComp_total_throughput." + figformat,
+        fname=path + "NanoComp_total_throughput." + figformat,
         format=figformat,
-        dpi=100)
+        dpi=100,
+        bbox_inches='tight')
     plt.close("all")
 
 
