@@ -352,10 +352,21 @@ def violin_or_box_plot(df, y, figformat, path, violin=True, log=False):
     '''
     if violin:
         logging.info("Nanoplotter: Creating violin plot for {}.".format(y))
-        ax = sns.violinplot(x="dataset", y=y, data=df, inner=None, cut=0)
+        ax = sns.violinplot(
+            x="dataset",
+            y=y,
+            data=df,
+            inner=None,
+            cut=0,
+            order=df["dataset"].unique(),
+            linewidth=0)
     else:
         logging.info("Nanoplotter: Creating box plot for {}.".format(y))
-        ax = sns.boxplot(x="dataset", y=y, data=df)
+        ax = sns.boxplot(
+            x="dataset",
+            y=y,
+            data=df,
+            order=df["dataset"].unique())
     if log:
         ticks = [10**i for i in range(10) if not 10**i > 10 * (10**np.amax(df[y]))]
         ax.set(yticks=np.log10(ticks), yticklabels=ticks)
@@ -377,23 +388,27 @@ def output_barplot(df, figformat, path):
     ax = sns.countplot(
         x="dataset",
         data=df,
-        palette="Greens")
+        order=df["dataset"].unique())
     ax.set(xlabel='Number of reads')
+    plt.xticks(rotation=45)
     fig = ax.get_figure()
     fig.savefig(
-        path + "NanoComp_number_of_reads." + figformat,
+        fname=path + "NanoComp_number_of_reads." + figformat,
         format=figformat,
-        dpi=100)
+        dpi=100,
+        bbox_inches='tight')
     plt.close("all")
     ax = sns.barplot(
         x=df["dataset"].unique(),
         y=df.groupby('dataset')['lengths'].sum(),
-        palette="Greens")
+        order=df["dataset"].unique())
+    plt.xticks(rotation=45)
     fig = ax.get_figure()
     fig.savefig(
-        path + "NanoComp_total_throughput." + figformat,
+        fname=path + "NanoComp_total_throughput." + figformat,
         format=figformat,
-        dpi=100)
+        dpi=100,
+        bbox_inches='tight')
     plt.close("all")
 
 
