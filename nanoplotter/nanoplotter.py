@@ -162,7 +162,7 @@ def check_valid_time(df, timescol, days=5):
     '''
     timediff = (df[timescol].max() - df[timescol].min()).days
     if timediff < days:
-        return df
+        return df.sort_values(timescol)
     else:
         sys.stderr.write("\nWarning: data generated is from more than {} days.\n".format(str(days)))
         sys.stderr.write("Likely this indicates you are combining multiple runs.\n")
@@ -171,7 +171,7 @@ def check_valid_time(df, timescol, days=5):
                 str(days)))
         logging.warning("Time plots truncated to first {} days: invalid timespan: {} days".format(
             str(days), str(timediff)))
-        return df[df[timescol] < timedelta(days=days)]
+        return df[df[timescol] < timedelta(days=days)].sort_values(timescol)
 
 
 def time_plots(df, path, color, figformat):
@@ -179,9 +179,8 @@ def time_plots(df, path, color, figformat):
     Plotting function
     Making plots of time vs read length, time vs quality and cumulative yield
     '''
-    df = check_valid_time(df, "start_time")
-    logging.info("Nanoplotter: Creating timeplots.")
-    dfs = df.sort_values("start_time")
+    dfs = check_valid_time(df, "start_time")
+    logging.info("Nanoplotter: Creating timeplots using {} reads.".format(len(dfs)))
     dfs["cumyield_gb"] = dfs["lengths"].cumsum() / 10**9
     dfs_sparse = dfs.sample(min(2000, len(df.index)))
     dfs_sparse["time"] = dfs_sparse["start_time"].astype('timedelta64[s]')
