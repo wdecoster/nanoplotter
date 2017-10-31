@@ -30,12 +30,25 @@ import sys
 from datetime import timedelta
 import pandas as pd
 import numpy as np
+import base64
+from math import ceil
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib import colors as mcolors
 import seaborn as sns
 from pauvre.marginplot import margin_plot
+
+
+class Plot(object):
+
+    def __init__(self, path, title):
+        self.path = path
+        self.title = title
+
+    def encode(self):
+        data_uri = base64.b64encode(open(self.path, 'rb').read()).decode('utf-8').replace('\n', '')
+        return '<img src="data:image/png;base64,{0}">'.format(data_uri)
 
 
 def check_valid_color(color):
@@ -81,7 +94,13 @@ def scatter(x, y, names, path, color, figformat, plots, stat=None, log=False, mi
     sns.set(style="ticks")
     maxvalx = np.amax(x)
     maxvaly = np.amax(y)
+
+    plots_made = []
+
     if plots["hex"]:
+        hex_plot = Plot(
+            path=path + "_hex." + figformat,
+            title="{} vs {} plot using hexagonal bins".format(names[0], names[1]))
         plot = sns.jointplot(
             x=x,
             y=y,
@@ -97,9 +116,14 @@ def scatter(x, y, names, path, color, figformat, plots, stat=None, log=False, mi
             ticks = [10**i for i in range(10) if not 10**i > 10 * (10**maxvalx)]
             plot.ax_joint.set_xticks(np.log10(ticks))
             plot.ax_joint.set_xticklabels(ticks)
-        plot.savefig(path + "_hex." + figformat, format=figformat, dpi=100)
+        plot.savefig(hex_plot.path, format=figformat, dpi=100)
+        plots_made.append(hex_plot)
+
     sns.set(style="darkgrid")
     if plots["dot"]:
+        dot_plot = Plot(
+            path=path + "_dot." + figformat,
+            title="{} vs {} plot using dots".format(names[0], names[1]))
         plot = sns.jointplot(
             x=x,
             y=y,
@@ -116,8 +140,13 @@ def scatter(x, y, names, path, color, figformat, plots, stat=None, log=False, mi
             ticks = [10**i for i in range(10) if not 10**i > 10 * (10**maxvalx)]
             plot.ax_joint.set_xticks(np.log10(ticks))
             plot.ax_joint.set_xticklabels(ticks)
-        plot.savefig(path + "_dot." + figformat, format=figformat, dpi=100)
+        plot.savefig(dot_plot.path, format=figformat, dpi=100)
+        plots_made.append(dot_plot)
+
     if plots["kde"]:
+        kde_plot = Plot(
+            path=path + "_kde." + figformat,
+            title="{} vs {} plot using a kernel density estimation".format(names[0], names[1]))
         plot = sns.jointplot(
             x=x,
             y=y,
@@ -135,8 +164,13 @@ def scatter(x, y, names, path, color, figformat, plots, stat=None, log=False, mi
             ticks = [10**i for i in range(10) if not 10**i > 10 * (10**maxvalx)]
             plot.ax_joint.set_xticks(np.log10(ticks))
             plot.ax_joint.set_xticklabels(ticks)
-        plot.savefig(path + "_kde." + figformat, format=figformat, dpi=100)
+        plot.savefig(kde_plot.path, format=figformat, dpi=100)
+        plots_made.append(kde_plot)
+
     if plots["pauvre"] and names == ['Read lengths', 'Average read quality']:
+        pauvre_plot = Plot(
+            path=path + "_pauvre." + figformat,
+            title="{} vs {} plot using pauvre-style @conchoecia".format(names[0], names[1]))
         sns.set_style("white")
         margin_plot(df=pd.DataFrame({"length": x, "meanQual": y}),
                     Y_AXES=False,
@@ -147,12 +181,14 @@ def scatter(x, y, names, path, color, figformat, plots, stat=None, log=False, mi
                     plot_minqual=0,
                     lengthbin=None,
                     qualbin=None,
-                    BASENAME=path + "_pauvre." + figformat,
+                    BASENAME=pauvre_plot.path,
                     fileform=[figformat],
                     dpi=600,
                     TRANSPARENT=True,
                     QUIET=True)
+        plots_made.append(pauvre_plot)
     plt.close("all")
+    return plots_made
 
 
 def check_valid_time_and_sort(df, timescol, days=5):
@@ -191,29 +227,9 @@ def time_plots(df, path, color, figformat):
         steps = 8
     ticks = [int(i) for i in range(0, 168, steps) if not i > (maxtime / 3600)]
 
-    if "quals" in dfs:
-        bins = (maxtime / 3600) / 6
-        dfs['timebin'] = pd.cut(
-            x=dfs["start_time"],
-            bins=round(bins),
-            labels=[str(i) + "-" + str(i + 6) for i in range(0, 168, 6) if not i > (maxtime / 3600)])
-        ax = sns.violinplot(
-            x="timebin",
-            y="quals",
-            data=dfs,
-            inner=None,
-            cut=0,
-            linewidth=0)
-        ax.set(
-            xlabel='Interval (hours)',
-            ylabel="Basecall quality")
-        plt.xticks(rotation=45)
-        fig = ax.get_figure()
-        fig.savefig(
-            fname=path + "TimeQualityViolinPlot." + figformat,
-            format=figformat,
-            dpi=100,
-            bbox_inches='tight')
+    time_length = Plot(
+        path=path + "TimeLengthScatterPlot." + figformat,
+        title="Scatter plot of read length over time")
     g = sns.JointGrid(
         x='start_time',
         y="lengths",
@@ -227,11 +243,14 @@ def time_plots(df, path, color, figformat):
     g.ax_marg_y.hist(dfs_sparse["lengths"].dropna(), orientation="horizontal", color=color)
     g.set_axis_labels('Run time (hours)', 'Median read length')
     g.savefig(
-        fname=path + "TimeLengthScatterPlot." + figformat,
+        fname=time_length.path,
         format=figformat,
         dpi=100)
     plt.close("all")
 
+    cum_yield = Plot(
+        path=path + "CumulativeYieldPlot." + figformat,
+        title="Cumulative yield")
     ax = sns.regplot(
         x='start_time',
         y="cumyield_gb",
@@ -246,8 +265,38 @@ def time_plots(df, path, color, figformat):
         xlabel='Run time (hours)',
         ylabel='Cumulative yield in gigabase')
     fig = ax.get_figure()
-    fig.savefig(path + "CumulativeYieldPlot." + figformat, format=figformat, dpi=100)
+    fig.savefig(cum_yield.path, format=figformat, dpi=100)
     plt.close("all")
+
+    plots = [cum_yield, time_length]
+
+    if "quals" in dfs:
+        time_qual = Plot(
+            path=path + "TimeQualityViolinPlot." + figformat,
+            title="Violin plot of quality over time")
+        dfs['timebin'] = pd.cut(
+            x=dfs["start_time"],
+            bins=ceil((maxtime / 3600) / 6),
+            labels=[str(i) + "-" + str(i + 6) for i in range(0, 168, 6) if not i > (maxtime / 3600)])
+        ax = sns.violinplot(
+            x="timebin",
+            y="quals",
+            data=dfs,
+            inner=None,
+            cut=0,
+            linewidth=0)
+        ax.set(
+            xlabel='Interval (hours)',
+            ylabel="Basecall quality")
+        plt.xticks(rotation=45)
+        fig = ax.get_figure()
+        fig.savefig(
+            fname=time_qual.path,
+            format=figformat,
+            dpi=100,
+            bbox_inches='tight')
+        plots.append(time_qual)
+    return plots
 
 
 def length_plots(array, name, path, n50, color, figformat, log=False):
@@ -264,6 +313,10 @@ def length_plots(array, name, path, n50, color, figformat, log=False):
         bins = None
     else:
         bins = round(int(maxvalx) / 100)
+
+    density_plot = Plot(
+        path=path + "DensityCurve" + name.replace(' ', '') + "." + figformat,
+        title="Density curve of read lengths")
     ax = sns.distplot(
         a=array,
         kde=True,
@@ -275,10 +328,12 @@ def length_plots(array, name, path, n50, color, figformat, log=False):
         ticks = [10**i for i in range(10) if not 10**i > 10 * (10**maxvalx)]
         ax.set(xticks=np.log10(ticks), xticklabels=ticks)
     fig = ax.get_figure()
-    fig.savefig(path + "DensityCurve" + name.replace(' ', '') +
-                "." + figformat, format=figformat, dpi=100)
+    fig.savefig(density_plot.path, format=figformat, dpi=100)
     plt.close("all")
 
+    histogram = Plot(
+        path=path + "Histogram" + name.replace(' ', '') + "." + figformat,
+        title="Histogram of read lengths")
     ax = sns.distplot(
         a=array,
         kde=False,
@@ -299,9 +354,9 @@ def length_plots(array, name, path, n50, color, figformat, log=False):
             plt.annotate('N50', xy=(n50, np.amax([h.get_height() for h in ax.patches])), size=8)
     ax.set(xlabel='Read length', ylabel='Number of reads')
     fig = ax.get_figure()
-    fig.savefig(path + "Histogram" + name.replace(' ', '') +
-                "." + figformat, format=figformat, dpi=100)
+    fig.savefig(histogram.path, format=figformat, dpi=100)
     plt.close("all")
+    return density_plot, histogram
 
 
 def make_layout():
@@ -330,7 +385,9 @@ def spatial_heatmap(array, title, path, color, figformat):
     valueCounts = pd.value_counts(pd.Series(array))
     for entry in valueCounts.keys():
         activityData[np.where(layout == entry)] = valueCounts[entry]
-
+    activity_map = Plot(
+        path=path + "." + figformat,
+        title="Channel activity")
     plt.figure()
     ax = sns.heatmap(
         data=activityData,
@@ -342,8 +399,9 @@ def spatial_heatmap(array, title, path, color, figformat):
         linewidths=0.20)
     ax.set_title(title)
     fig = ax.get_figure()
-    fig.savefig(path + "." + figformat, format=figformat, dpi=100)
+    fig.savefig(activity_map.path, format=figformat, dpi=100)
     plt.close("all")
+    return [activity_map]
 
 
 def violin_or_box_plot(df, y, figformat, path, violin=True, log=False):
