@@ -155,7 +155,7 @@ def scatter(x, y, names, path, color, figformat, plots, stat=None, log=False, mi
     plt.close("all")
 
 
-def check_valid_time(df, timescol, days=5):
+def check_valid_time_and_sort(df, timescol, days=5):
     '''
     Check if the data contains reads created within the same 96-hours timeframe
     if not, return false and warn the user that time plots are invalid and not created
@@ -179,7 +179,7 @@ def time_plots(df, path, color, figformat):
     Plotting function
     Making plots of time vs read length, time vs quality and cumulative yield
     '''
-    dfs = check_valid_time(df, "start_time")
+    dfs = check_valid_time_and_sort(df, "start_time")
     logging.info("Nanoplotter: Creating timeplots using {} reads.".format(len(dfs)))
     dfs["cumyield_gb"] = dfs["lengths"].cumsum() / 10**9
     dfs_sparse = dfs.sample(min(2000, len(df.index)))
