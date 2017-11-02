@@ -304,7 +304,7 @@ def time_plots(df, path, color, figformat):
     return plots
 
 
-def length_plots(array, name, path, n50, color, figformat, log=False):
+def length_plots(array, name, path, n50, color, figformat):
     '''
     Plotting function
     Create histogram based on a numpy array
@@ -314,10 +314,6 @@ def length_plots(array, name, path, n50, color, figformat, log=False):
     maxvalx = np.amax(array)
     logging.info("Nanoplotter: Using {} reads with read length N50 of {} and maximum of {}.".format(
         array.size, n50, maxvalx))
-    if log:
-        bins = None
-    else:
-        bins = round(int(maxvalx) / 100)
 
     histogram = Plot(
         path=path + "Histogram" + name.replace(' ', '') + "." + figformat,
@@ -326,27 +322,37 @@ def length_plots(array, name, path, n50, color, figformat, log=False):
         a=array,
         kde=False,
         hist=True,
-        bins=bins,
+        bins=round(int(maxvalx) / 100),
         color=color)
-    if log:
-        histogram.title = histogram.title + " after log transformation"
-        ticks = [10**i for i in range(10) if not 10**i > 10 * (10**maxvalx)]
-        ax.set(
-            xticks=np.log10(ticks),
-            xticklabels=ticks)
-        if n50:
-            plt.axvline(np.log10(n50))
-            plt.annotate('N50', xy=(np.log10(n50), np.amax(
-                [h.get_height() for h in ax.patches])), size=8)
-    else:
-        if n50:
-            plt.axvline(n50)
-            plt.annotate('N50', xy=(n50, np.amax([h.get_height() for h in ax.patches])), size=8)
+    if n50:
+        plt.axvline(n50)
+        plt.annotate('N50', xy=(n50, np.amax([h.get_height() for h in ax.patches])), size=8)
     ax.set(xlabel='Read length', ylabel='Number of reads')
     fig = ax.get_figure()
     fig.savefig(histogram.path, format=figformat, dpi=100)
     plt.close("all")
-    return [histogram]
+
+    log_histogram = Plot(
+        path=path + "LogTransformedHistogram" + name.replace(' ', '') + "." + figformat,
+        title="Histogram of read lengths after log transformation")
+    ax = sns.distplot(
+        a=np.log10(array),
+        kde=False,
+        hist=True,
+        color=color)
+    ticks = [10**i for i in range(10) if not 10**i > 10 * (10**maxvalx)]
+    ax.set(
+        xticks=np.log10(ticks),
+        xticklabels=ticks)
+    if n50:
+        plt.axvline(np.log10(n50))
+        plt.annotate('N50', xy=(np.log10(n50), np.amax(
+            [h.get_height() for h in ax.patches])), size=8)
+    ax.set(xlabel='Read length', ylabel='Number of reads')
+    fig = ax.get_figure()
+    fig.savefig(log_histogram.path, format=figformat, dpi=100)
+    plt.close("all")
+    return [histogram, log_histogram]
 
 
 def make_layout():
