@@ -113,6 +113,7 @@ def scatter(x, y, names, path, color, figformat, plots, stat=None, log=False, mi
             size=10)
         plot.set_axis_labels(names[0], names[1])
         if log:
+            hex_plot.title = hex_plot.title + " after log transformation of read lengths"
             ticks = [10**i for i in range(10) if not 10**i > 10 * (10**maxvalx)]
             plot.ax_joint.set_xticks(np.log10(ticks))
             plot.ax_joint.set_xticklabels(ticks)
@@ -137,6 +138,7 @@ def scatter(x, y, names, path, color, figformat, plots, stat=None, log=False, mi
             joint_kws={"s": 1})
         plot.set_axis_labels(names[0], names[1])
         if log:
+            dot_plot.title = dot_plot.title + " after log transformation of read lengths"
             ticks = [10**i for i in range(10) if not 10**i > 10 * (10**maxvalx)]
             plot.ax_joint.set_xticks(np.log10(ticks))
             plot.ax_joint.set_xticklabels(ticks)
@@ -161,6 +163,7 @@ def scatter(x, y, names, path, color, figformat, plots, stat=None, log=False, mi
             size=10)
         plot.set_axis_labels(names[0], names[1])
         if log:
+            kde_plot.title = kde_plot.title + " after log transformation of read lengths"
             ticks = [10**i for i in range(10) if not 10**i > 10 * (10**maxvalx)]
             plot.ax_joint.set_xticks(np.log10(ticks))
             plot.ax_joint.set_xticklabels(ticks)
@@ -186,6 +189,8 @@ def scatter(x, y, names, path, color, figformat, plots, stat=None, log=False, mi
                     dpi=600,
                     TRANSPARENT=True,
                     QUIET=True)
+        if log:
+            pauvre_plot.title = pauvre_plot.title + " after log transformation of read lengths"
         plots_made.append(pauvre_plot)
     plt.close("all")
     return plots_made
@@ -302,7 +307,7 @@ def time_plots(df, path, color, figformat):
 def length_plots(array, name, path, n50, color, figformat, log=False):
     '''
     Plotting function
-    Create density plot and histogram based on a numpy array
+    Create histogram based on a numpy array
     containing read lengths or transformed read lengths
     '''
     logging.info("Nanoplotter: Creating length plots for {}.".format(name))
@@ -314,23 +319,6 @@ def length_plots(array, name, path, n50, color, figformat, log=False):
     else:
         bins = round(int(maxvalx) / 100)
 
-    density_plot = Plot(
-        path=path + "DensityCurve" + name.replace(' ', '') + "." + figformat,
-        title="Density curve of read lengths")
-    ax = sns.distplot(
-        a=array,
-        kde=True,
-        hist=False,
-        bins=bins,
-        color=color,
-        kde_kws={"label": name, "clip": (0, maxvalx)})
-    if log:
-        ticks = [10**i for i in range(10) if not 10**i > 10 * (10**maxvalx)]
-        ax.set(xticks=np.log10(ticks), xticklabels=ticks)
-    fig = ax.get_figure()
-    fig.savefig(density_plot.path, format=figformat, dpi=100)
-    plt.close("all")
-
     histogram = Plot(
         path=path + "Histogram" + name.replace(' ', '') + "." + figformat,
         title="Histogram of read lengths")
@@ -341,6 +329,8 @@ def length_plots(array, name, path, n50, color, figformat, log=False):
         bins=bins,
         color=color)
     if log:
+        histogram.title = histogram.title + " after log transformation"
+        ticks = [10**i for i in range(10) if not 10**i > 10 * (10**maxvalx)]
         ax.set(
             xticks=np.log10(ticks),
             xticklabels=ticks)
@@ -356,7 +346,7 @@ def length_plots(array, name, path, n50, color, figformat, log=False):
     fig = ax.get_figure()
     fig.savefig(histogram.path, format=figformat, dpi=100)
     plt.close("all")
-    return density_plot, histogram
+    return [histogram]
 
 
 def make_layout():
