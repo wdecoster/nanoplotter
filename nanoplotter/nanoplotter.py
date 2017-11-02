@@ -81,7 +81,7 @@ def check_valid_format(figformat):
         return "png"
 
 
-def scatter(x, y, names, path, color, figformat, plots, stat=None, log=False, minvalx=0, minvaly=0):
+def scatter(x, y, names, path, plots, color="#4CB391", figformat="png", stat=None, log=False, minvalx=0, minvaly=0):
     '''
     Plotting functionq
     Create three types of joint plots of length vs quality, containing marginal summaries
@@ -215,7 +215,7 @@ def check_valid_time_and_sort(df, timescol, days=5):
         return df[df[timescol] < timedelta(days=days)].sort_values(timescol)
 
 
-def time_plots(df, path, color, figformat):
+def time_plots(df, path, color="#4CB391", figformat="png"):
     '''
     Plotting function
     Making plots of time vs read length, time vs quality and cumulative yield
@@ -304,7 +304,7 @@ def time_plots(df, path, color, figformat):
     return plots
 
 
-def length_plots(array, name, path, n50, color, figformat):
+def length_plots(array, name, path, n50=None, color="#4CB391", figformat="png"):
     '''
     Plotting function
     Create histogram based on a numpy array
@@ -369,7 +369,7 @@ def make_layout():
     return np.array(layoutlist).transpose()
 
 
-def spatial_heatmap(array, title, path, color, figformat):
+def spatial_heatmap(array, title, path, color="Greens", figformat="png"):
     '''
     Plotting function
     Taking channel information and creating post run channel activity plots
@@ -469,8 +469,35 @@ def output_barplot(df, figformat, path):
     plt.close("all")
 
 
+def run_tests():
+    import pickle
+    df = pickle.load(open("nanotest/sequencing_summary.pickle", "rb"))
+    scatter(
+        x=df["lengths"],
+        y=df["quals"],
+        names=['Read lengths', 'Average read quality'],
+        path="LengthvsQualityScatterPlot",
+        plots={'dot': 1, 'kde': 1, 'hex': 1, 'pauvre': 1})
+    time_plots(
+        df=df,
+        path=".",
+        color="#4CB391")
+    length_plots(
+        array=df["lengths"],
+        name="lengths",
+        path=".")
+    spatial_heatmap(
+        array=df["channelIDs"],
+        title="Number of reads generated per channel",
+        path="ActivityMap_ReadsPerChannel")
+
+
 checkvalidColor = check_valid_color
 checkvalidFormat = check_valid_format
 spatialHeatmap = spatial_heatmap
 lengthPlots = length_plots
 timePlots = time_plots
+
+
+if __name__ == "__main__":
+    run_tests()
