@@ -9,7 +9,7 @@ python:
 # command to install dependencies
 install: "pip install nanoplotter"
 # command to run tests
-script: python -c "import nanoplotter"
+script: bash scripts/test.sh 
 
 notifications:
   email: false
