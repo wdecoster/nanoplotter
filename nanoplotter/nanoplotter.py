@@ -24,7 +24,6 @@ spatialHeatmap(array, title, path, color, format)
 '''
 
 
-from __future__ import division
 import logging
 import sys
 from datetime import timedelta
