@@ -312,9 +312,11 @@ def length_plots(array, name, path, n50=None, color="#4CB391", figformat="png"):
     '''
     logging.info("Nanoplotter: Creating length plots for {}.".format(name))
     maxvalx = np.amax(array)
-    logging.info("Nanoplotter: Using {} reads with read length N50 of {} and maximum of {}.".format(
-        array.size, n50, maxvalx))
-
+    if n50:
+        logging.info("Nanoplotter: Using {} reads with read length N50 of {}bp and maximum of {}bp.".format(
+            array.size, n50, maxvalx))
+    else:
+        logging.info("Nanoplotter: Using {} reads maximum of {}bp.".format(array.size, maxvalx))
     histogram = Plot(
         path=path + "Histogram" + name.replace(' ', '') + "." + figformat,
         title="Histogram of read lengths")
