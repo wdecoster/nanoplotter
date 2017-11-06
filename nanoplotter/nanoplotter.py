@@ -82,7 +82,7 @@ def check_valid_format(figformat):
 
 def scatter(x, y, names, path, plots, color="#4CB391", figformat="png", stat=None, log=False, minvalx=0, minvaly=0):
     '''
-    Plotting functionq
+    Plotting function
     Create three types of joint plots of length vs quality, containing marginal summaries
     -A scatter plot with histograms on axes
     -A hexagonal binned plot with histograms on axes
