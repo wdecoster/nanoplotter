@@ -1,5 +1,5 @@
 # wdecoster
-'''
+"""
 This module provides functions for plotting data extracted from Oxford Nanopore sequencing
 reads and alignments, but some of it's functions can also be used for other applications.
 
@@ -21,7 +21,7 @@ makeLayout()
 * Present the activity (number of reads) per channel on the flowcell as a heatmap
 spatialHeatmap(array, title, path, color, format)
 
-'''
+"""
 
 
 import logging
@@ -40,21 +40,23 @@ from pauvre.marginplot import margin_plot
 
 
 class Plot(object):
+    """A Plot object is defined by a path to the output file and the title of the plot."""
 
     def __init__(self, path, title):
         self.path = path
         self.title = title
 
     def encode(self):
+        """Return the base64 encoding of the plot and insert in html image tag."""
         data_uri = base64.b64encode(open(self.path, 'rb').read()).decode('utf-8').replace('\n', '')
         return '<img src="data:image/png;base64,{0}">'.format(data_uri)
 
 
 def check_valid_color(color):
-    '''
-    Check if the color provided by the user is valid
+    """Check if the color provided by the user is valid.
+
     If color is invalid the default is returned.
-    '''
+    """
     if color in list(mcolors.CSS4_COLORS.keys()) + ["#4CB391"]:
         logging.info("Nanoplotter: Valid color {}.".format(color))
         return color
@@ -65,11 +67,11 @@ def check_valid_color(color):
 
 
 def check_valid_format(figformat):
-    '''
-    Check if the specified format is valid.
+    """Check if the specified figure format is valid.
+
     If format is invalid the default is returned.
     Probably installation-dependent
-    '''
+    """
     fig = plt.figure()
     if figformat in list(fig.canvas.get_supported_filetypes().keys()):
         logging.info("Nanoplotter: valid output format {}".format(figformat))
@@ -81,13 +83,14 @@ def check_valid_format(figformat):
 
 
 def scatter(x, y, names, path, plots, color="#4CB391", figformat="png", stat=None, log=False, minvalx=0, minvaly=0):
-    '''
-    Plotting function
-    Create three types of joint plots of length vs quality, containing marginal summaries
+    """Create bivariate plots.
+
+    Create four types of bivariate plots of x vs y, containing marginal summaries
     -A scatter plot with histograms on axes
     -A hexagonal binned plot with histograms on axes
     -A kernel density plot with density curves on axes, subsampled to 10000 reads if required
-    '''
+    -A pauvre-style plot using code from https://github.com/conchoecia/pauvre
+    """
     logging.info("Nanoplotter: Creating {} vs {} plots using statistics from {} reads.".format(
         names[0], names[1], x.size))
     sns.set(style="ticks")
@@ -197,10 +200,10 @@ def scatter(x, y, names, path, plots, color="#4CB391", figformat="png", stat=Non
 
 
 def check_valid_time_and_sort(df, timescol, days=5):
-    '''
-    Check if the data contains reads created within the same 96-hours timeframe
-    if not, return false and warn the user that time plots are invalid and not created
-    '''
+    """Check if the data contains reads created within the same `days` timeframe.
+
+    if not, print warning and only return part of the data which is within `days` days
+    """
     timediff = (df[timescol].max() - df[timescol].min()).days
     if timediff < days:
         return df.sort_values(timescol)
@@ -216,10 +219,7 @@ def check_valid_time_and_sort(df, timescol, days=5):
 
 
 def time_plots(df, path, color="#4CB391", figformat="png"):
-    '''
-    Plotting function
-    Making plots of time vs read length, time vs quality and cumulative yield
-    '''
+    """Making plots of time vs read length, time vs quality and cumulative yield."""
     dfs = check_valid_time_and_sort(df, "start_time")
     logging.info("Nanoplotter: Creating timeplots using {} reads.".format(len(dfs)))
     dfs["cumyield_gb"] = dfs["lengths"].cumsum() / 10**9
@@ -305,11 +305,7 @@ def time_plots(df, path, color="#4CB391", figformat="png"):
 
 
 def length_plots(array, name, path, n50=None, color="#4CB391", figformat="png"):
-    '''
-    Plotting function
-    Create histogram based on a numpy array
-    containing read lengths or transformed read lengths
-    '''
+    """Create histogram of normal and log transformed read lengths."""
     logging.info("Nanoplotter: Creating length plots for {}.".format(name))
     maxvalx = np.amax(array)
     if n50:
@@ -358,11 +354,11 @@ def length_plots(array, name, path, n50=None, color="#4CB391", figformat="png"):
 
 
 def make_layout():
-    '''
-    Make the physical layout of the MinION flowcell
+    """Make the physical layout of the MinION flowcell.
+
     based on https://bioinformatics.stackexchange.com/a/749/681
     returned as a numpy array
-    '''
+    """
     layoutlist = []
     for i, j in zip([33, 481, 417, 353, 289, 225, 161, 97], [8, 456, 392, 328, 264, 200, 136, 72]):
         for n in range(4):
@@ -372,10 +368,7 @@ def make_layout():
 
 
 def spatial_heatmap(array, title, path, color="Greens", figformat="png"):
-    '''
-    Plotting function
-    Taking channel information and creating post run channel activity plots
-    '''
+    """Taking channel information and creating post run channel activity plots."""
     logging.info("Nanoplotter: Creating activity map for {} using statistics from {} reads.".format(
         title.lower(), array.size))
     layout = make_layout()
@@ -403,12 +396,11 @@ def spatial_heatmap(array, title, path, color="Greens", figformat="png"):
 
 
 def violin_or_box_plot(df, y, figformat, path, violin=True, log=False):
-    '''
-    Plotting function
-    Create a violinplot from the received DataFrame
+    """Create a violin or boxplot from the received DataFrame.
+
     The x-axis should be divided based on the 'dataset' column,
     the y-axis is specified in the arguments
-    '''
+    """
     if violin:
         logging.info("Nanoplotter: Creating violin plot for {}.".format(y))
         ax = sns.violinplot(
@@ -440,10 +432,7 @@ def violin_or_box_plot(df, y, figformat, path, violin=True, log=False):
 
 
 def output_barplot(df, figformat, path):
-    '''
-    Plotting function
-    Create barplots based on number of reads and total sum of nucleotides sequenced
-    '''
+    """Create barplots based on number of reads and total sum of nucleotides sequenced."""
     ax = sns.countplot(
         x="dataset",
         data=df,
