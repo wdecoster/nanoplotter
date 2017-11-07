@@ -449,10 +449,12 @@ def output_barplot(df, figformat, path):
         dpi=100,
         bbox_inches='tight')
     plt.close("all")
+
     ax = sns.barplot(
         x=df["dataset"].unique(),
-        y=df.groupby('dataset')['lengths'].sum(),
+        y=df.groupby('dataset')['lengths'].sum() / 1e6,
         order=df["dataset"].unique())
+    ax.set(ylabel='Total megabase sequenced')
     plt.xticks(rotation=30)
     fig = ax.get_figure()
     fig.savefig(
