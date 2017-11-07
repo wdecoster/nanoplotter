@@ -420,7 +420,9 @@ def violin_or_box_plot(df, y, figformat, path, violin=True, log=False):
             order=df["dataset"].unique())
     if log:
         ticks = [10**i for i in range(10) if not 10**i > 10 * (10**np.amax(df[y]))]
-        ax.set(yticks=np.log10(ticks), yticklabels=ticks)
+        ax.set(
+            yticks=np.log10(ticks),
+            yticklabels=ticks)
     plt.xticks(rotation=30)
     fig = ax.get_figure()
     fig.savefig(
