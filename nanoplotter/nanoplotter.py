@@ -339,7 +339,7 @@ def length_plots(array, name, path, n50=None, color="#4CB391", figformat="png"):
         kde=False,
         hist=True,
         color=color)
-    ticks = [10**i for i in range(10) if not 10**i > 10 * (10**maxvalx)]
+    ticks = [10**i for i in range(10) if not 10**i > 10 * maxvalx]
     ax.set(
         xticks=np.log10(ticks),
         xticklabels=ticks)
