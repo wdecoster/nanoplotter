@@ -256,6 +256,7 @@ def time_plots(df, path, color="#4CB391", figformat="png"):
     cum_yield = Plot(
         path=path + "CumulativeYieldPlot." + figformat,
         title="Cumulative yield")
+    sns.set_style("white")
     ax = sns.regplot(
         x='start_time',
         y="cumyield_gb",
