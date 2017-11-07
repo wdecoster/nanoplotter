@@ -256,7 +256,6 @@ def time_plots(df, path, color="#4CB391", figformat="png"):
     cum_yield = Plot(
         path=path + "CumulativeYieldPlot." + figformat,
         title="Cumulative yield")
-    sns.set_style("white")
     ax = sns.regplot(
         x='start_time',
         y="cumyield_gb",
@@ -280,6 +279,7 @@ def time_plots(df, path, color="#4CB391", figformat="png"):
         time_qual = Plot(
             path=path + "TimeQualityViolinPlot." + figformat,
             title="Violin plot of quality over time")
+        sns.set_style("white")
         dfs['timebin'] = pd.cut(
             x=dfs["start_time"],
             bins=ceil((maxtime / 3600) / 6),
@@ -294,7 +294,7 @@ def time_plots(df, path, color="#4CB391", figformat="png"):
         ax.set(
             xlabel='Interval (hours)',
             ylabel="Basecall quality")
-        plt.xticks(rotation=45)
+        plt.xticks(rotation=30)
         fig = ax.get_figure()
         fig.savefig(
             fname=time_qual.path,
