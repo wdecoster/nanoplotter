@@ -371,14 +371,14 @@ def spatial_heatmap(array, title, path, color="Greens", figformat="png"):
     """Taking channel information and creating post run channel activity plots."""
     logging.info("Nanoplotter: Creating activity map for {} using statistics from {} reads.".format(
         title.lower(), array.size))
+    activity_map = Plot(
+        path=path + "." + figformat,
+        title="Channel activity")
     layout = make_layout()
     activityData = np.zeros((16, 32))
     valueCounts = pd.value_counts(pd.Series(array))
     for entry in valueCounts.keys():
         activityData[np.where(layout == entry)] = valueCounts[entry]
-    activity_map = Plot(
-        path=path + "." + figformat,
-        title="Channel activity")
     plt.figure()
     ax = sns.heatmap(
         data=activityData,
@@ -421,7 +421,7 @@ def violin_or_box_plot(df, y, figformat, path, violin=True, log=False):
     if log:
         ticks = [10**i for i in range(10) if not 10**i > 10 * (10**np.amax(df[y]))]
         ax.set(yticks=np.log10(ticks), yticklabels=ticks)
-    plt.xticks(rotation=45)
+    plt.xticks(rotation=30)
     fig = ax.get_figure()
     fig.savefig(
         fname=path + "NanoComp_" + y.replace(' ', '_') + '.' + figformat,
@@ -438,7 +438,7 @@ def output_barplot(df, figformat, path):
         data=df,
         order=df["dataset"].unique())
     ax.set(xlabel='Number of reads')
-    plt.xticks(rotation=45)
+    plt.xticks(rotation=30)
     fig = ax.get_figure()
     fig.savefig(
         fname=path + "NanoComp_number_of_reads." + figformat,
@@ -450,7 +450,7 @@ def output_barplot(df, figformat, path):
         x=df["dataset"].unique(),
         y=df.groupby('dataset')['lengths'].sum(),
         order=df["dataset"].unique())
-    plt.xticks(rotation=45)
+    plt.xticks(rotation=30)
     fig = ax.get_figure()
     fig.savefig(
         fname=path + "NanoComp_total_throughput." + figformat,
