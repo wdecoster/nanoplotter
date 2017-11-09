@@ -118,6 +118,7 @@ def scatter(x, y, names, path, plots, color="#4CB391", figformat="png", stat=Non
             hex_plot.title = hex_plot.title + " after log transformation of read lengths"
             ticks = [10**i for i in range(10) if not 10**i > 10 * (10**maxvalx)]
             plot.ax_joint.set_xticks(np.log10(ticks))
+            plot.ax_marg_x.set_xticks(np.log10(ticks))
             plot.ax_joint.set_xticklabels(ticks)
         plot.savefig(hex_plot.path, format=figformat, dpi=100)
         plots_made.append(hex_plot)
@@ -143,6 +144,7 @@ def scatter(x, y, names, path, plots, color="#4CB391", figformat="png", stat=Non
             dot_plot.title = dot_plot.title + " after log transformation of read lengths"
             ticks = [10**i for i in range(10) if not 10**i > 10 * (10**maxvalx)]
             plot.ax_joint.set_xticks(np.log10(ticks))
+            plot.ax_marg_x.set_xticks(np.log10(ticks))
             plot.ax_joint.set_xticklabels(ticks)
         plot.savefig(dot_plot.path, format=figformat, dpi=100)
         plots_made.append(dot_plot)
@@ -168,6 +170,7 @@ def scatter(x, y, names, path, plots, color="#4CB391", figformat="png", stat=Non
             kde_plot.title = kde_plot.title + " after log transformation of read lengths"
             ticks = [10**i for i in range(10) if not 10**i > 10 * (10**maxvalx)]
             plot.ax_joint.set_xticks(np.log10(ticks))
+            plot.ax_marg_x.set_xticks(np.log10(ticks))
             plot.ax_joint.set_xticklabels(ticks)
         plot.savefig(kde_plot.path, format=figformat, dpi=100)
         plots_made.append(kde_plot)
