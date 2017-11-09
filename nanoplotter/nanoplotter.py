@@ -82,7 +82,8 @@ def check_valid_format(figformat):
         return "png"
 
 
-def scatter(x, y, names, path, plots, color="#4CB391", figformat="png", stat=None, log=False, minvalx=0, minvaly=0):
+def scatter(x, y, names, path, plots, color="#4CB391", figformat="png",
+            stat=None, log=False, minvalx=0, minvaly=0):
     """Create bivariate plots.
 
     Create four types of bivariate plots of x vs y, containing marginal summaries
@@ -283,10 +284,11 @@ def time_plots(df, path, color="#4CB391", figformat="png"):
             path=path + "TimeQualityViolinPlot." + figformat,
             title="Violin plot of quality over time")
         sns.set_style("white")
+        labels = [str(i) + "-" + str(i + 6) for i in range(0, 168, 6) if not i > (maxtime / 3600)]
         dfs['timebin'] = pd.cut(
             x=dfs["start_time"],
             bins=ceil((maxtime / 3600) / 6),
-            labels=[str(i) + "-" + str(i + 6) for i in range(0, 168, 6) if not i > (maxtime / 3600)])
+            labels=labels)
         ax = sns.violinplot(
             x="timebin",
             y="quals",
@@ -313,8 +315,8 @@ def length_plots(array, name, path, n50=None, color="#4CB391", figformat="png"):
     logging.info("Nanoplotter: Creating length plots for {}.".format(name))
     maxvalx = np.amax(array)
     if n50:
-        logging.info("Nanoplotter: Using {} reads with read length N50 of {}bp and maximum of {}bp.".format(
-            array.size, n50, maxvalx))
+        logging.info("Nanoplotter: Using {} reads with read length N50 of {}bp and maximum of {}bp."
+                     .format(array.size, n50, maxvalx))
     else:
         logging.info("Nanoplotter: Using {} reads maximum of {}bp.".format(array.size, maxvalx))
     histogram = Plot(
