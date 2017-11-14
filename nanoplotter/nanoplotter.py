@@ -83,7 +83,7 @@ def check_valid_format(figformat):
 
 
 def scatter(x, y, names, path, plots, color="#4CB391", figformat="png",
-            stat=None, log=False, minvalx=0, minvaly=0):
+            stat=None, log=False, minvalx=0, minvaly=0, title=None):
     """Create bivariate plots.
 
     Create four types of bivariate plots of x vs y, containing marginal summaries
@@ -121,6 +121,8 @@ def scatter(x, y, names, path, plots, color="#4CB391", figformat="png",
             plot.ax_joint.set_xticks(np.log10(ticks))
             plot.ax_marg_x.set_xticks(np.log10(ticks))
             plot.ax_joint.set_xticklabels(ticks)
+        plt.subplots_adjust(top=0.90)
+        plot.fig.suptitle(title or "{} vs {} plot".format(names[0], names[1]), fontsize=25)
         plot.savefig(hex_plot.path, format=figformat, dpi=100)
         plots_made.append(hex_plot)
 
@@ -147,6 +149,8 @@ def scatter(x, y, names, path, plots, color="#4CB391", figformat="png",
             plot.ax_joint.set_xticks(np.log10(ticks))
             plot.ax_marg_x.set_xticks(np.log10(ticks))
             plot.ax_joint.set_xticklabels(ticks)
+        plt.subplots_adjust(top=0.90)
+        plot.fig.suptitle(title or "{} vs {} plot".format(names[0], names[1]), fontsize=25)
         plot.savefig(dot_plot.path, format=figformat, dpi=100)
         plots_made.append(dot_plot)
 
@@ -173,6 +177,8 @@ def scatter(x, y, names, path, plots, color="#4CB391", figformat="png",
             plot.ax_joint.set_xticks(np.log10(ticks))
             plot.ax_marg_x.set_xticks(np.log10(ticks))
             plot.ax_joint.set_xticklabels(ticks)
+        plt.subplots_adjust(top=0.90)
+        plot.fig.suptitle(title or "{} vs {} plot".format(names[0], names[1]), fontsize=25)
         plot.savefig(kde_plot.path, format=figformat, dpi=100)
         plots_made.append(kde_plot)
 
@@ -183,7 +189,7 @@ def scatter(x, y, names, path, plots, color="#4CB391", figformat="png",
         sns.set_style("white")
         margin_plot(df=pd.DataFrame({"length": x, "meanQual": y}),
                     Y_AXES=False,
-                    title="Length vs Quality",
+                    title=title or "Length vs Quality in Pauvre-style",
                     plot_maxlen=None,
                     plot_minlen=0,
                     plot_maxqual=None,
@@ -222,7 +228,7 @@ def check_valid_time_and_sort(df, timescol, days=5):
         return df[df[timescol] < timedelta(days=days)].sort_values(timescol)
 
 
-def time_plots(df, path, color="#4CB391", figformat="png"):
+def time_plots(df, path, title=None, color="#4CB391", figformat="png"):
     """Making plots of time vs read length, time vs quality and cumulative yield."""
     dfs = check_valid_time_and_sort(df, "start_time")
     logging.info("Nanoplotter: Creating timeplots using {} reads.".format(len(dfs)))
@@ -235,27 +241,6 @@ def time_plots(df, path, color="#4CB391", figformat="png"):
     else:
         steps = 8
     ticks = [int(i) for i in range(0, 168, steps) if not i > (maxtime / 3600)]
-
-    time_length = Plot(
-        path=path + "TimeLengthScatterPlot." + figformat,
-        title="Scatter plot of read length over time")
-    g = sns.JointGrid(
-        x='start_time',
-        y="lengths",
-        data=dfs_sparse,
-        space=0,
-        size=10,
-        xlim=(0, maxtime))
-    g.plot_joint(plt.scatter, color=color)
-    g.ax_joint.set_xticks([i * 3600 for i in ticks])
-    g.ax_joint.set_xticklabels(ticks)
-    g.ax_marg_y.hist(dfs_sparse["lengths"].dropna(), orientation="horizontal", color=color)
-    g.set_axis_labels('Run time (hours)', 'Median read length')
-    g.savefig(
-        fname=time_length.path,
-        format=figformat,
-        dpi=100)
-    plt.close("all")
 
     cum_yield = Plot(
         path=path + "CumulativeYieldPlot." + figformat,
@@ -272,9 +257,39 @@ def time_plots(df, path, color="#4CB391", figformat="png"):
         xticks=[i * 3600 for i in ticks],
         xticklabels=ticks,
         xlabel='Run time (hours)',
-        ylabel='Cumulative yield in gigabase')
+        ylabel='Cumulative yield in gigabase',
+        title=title or cum_yield.title)
     fig = ax.get_figure()
     fig.savefig(cum_yield.path, format=figformat, dpi=100)
+    plt.close("all")
+
+    time_length = Plot(
+        path=path + "TimeLengthViolinPlot." + figformat,
+        title="Violin plot of read lengths over time")
+    sns.set_style("white")
+    labels = [str(i) + "-" + str(i + 6) for i in range(0, 168, 6) if not i > (maxtime / 3600)]
+    dfs['timebin'] = pd.cut(
+        x=dfs["start_time"],
+        bins=ceil((maxtime / 3600) / 6),
+        labels=labels)
+    ax = sns.violinplot(
+        x="timebin",
+        y="lengths",
+        data=dfs,
+        inner=None,
+        cut=0,
+        linewidth=0)
+    ax.set(
+        xlabel='Interval (hours)',
+        ylabel="Read length",
+        title=title or time_length.title)
+    plt.xticks(rotation=30)
+    fig = ax.get_figure()
+    fig.savefig(
+        fname=time_length.path,
+        format=figformat,
+        dpi=100,
+        bbox_inches='tight')
     plt.close("all")
 
     plots = [cum_yield, time_length]
@@ -284,11 +299,6 @@ def time_plots(df, path, color="#4CB391", figformat="png"):
             path=path + "TimeQualityViolinPlot." + figformat,
             title="Violin plot of quality over time")
         sns.set_style("white")
-        labels = [str(i) + "-" + str(i + 6) for i in range(0, 168, 6) if not i > (maxtime / 3600)]
-        dfs['timebin'] = pd.cut(
-            x=dfs["start_time"],
-            bins=ceil((maxtime / 3600) / 6),
-            labels=labels)
         ax = sns.violinplot(
             x="timebin",
             y="quals",
@@ -298,7 +308,8 @@ def time_plots(df, path, color="#4CB391", figformat="png"):
             linewidth=0)
         ax.set(
             xlabel='Interval (hours)',
-            ylabel="Basecall quality")
+            ylabel="Basecall quality",
+            title=title or time_qual.title)
         plt.xticks(rotation=30)
         fig = ax.get_figure()
         fig.savefig(
@@ -310,7 +321,7 @@ def time_plots(df, path, color="#4CB391", figformat="png"):
     return plots
 
 
-def length_plots(array, name, path, n50=None, color="#4CB391", figformat="png"):
+def length_plots(array, name, path, title=None, n50=None, color="#4CB391", figformat="png"):
     """Create histogram of normal and log transformed read lengths."""
     logging.info("Nanoplotter: Creating length plots for {}.".format(name))
     maxvalx = np.amax(array)
@@ -331,7 +342,10 @@ def length_plots(array, name, path, n50=None, color="#4CB391", figformat="png"):
     if n50:
         plt.axvline(n50)
         plt.annotate('N50', xy=(n50, np.amax([h.get_height() for h in ax.patches])), size=8)
-    ax.set(xlabel='Read length', ylabel='Number of reads')
+    ax.set(
+        xlabel='Read length',
+        ylabel='Number of reads',
+        title=title or histogram.title)
     fig = ax.get_figure()
     fig.savefig(histogram.path, format=figformat, dpi=100)
     plt.close("all")
@@ -347,12 +361,14 @@ def length_plots(array, name, path, n50=None, color="#4CB391", figformat="png"):
     ticks = [10**i for i in range(10) if not 10**i > 10 * maxvalx]
     ax.set(
         xticks=np.log10(ticks),
-        xticklabels=ticks)
+        xticklabels=ticks,
+        xlabel='Read length',
+        ylabel='Number of reads',
+        title=title or log_histogram.title)
     if n50:
         plt.axvline(np.log10(n50))
         plt.annotate('N50', xy=(np.log10(n50), np.amax(
             [h.get_height() for h in ax.patches])), size=8)
-    ax.set(xlabel='Read length', ylabel='Number of reads')
     fig = ax.get_figure()
     fig.savefig(log_histogram.path, format=figformat, dpi=100)
     plt.close("all")
@@ -373,13 +389,13 @@ def make_layout():
     return np.array(layoutlist).transpose()
 
 
-def spatial_heatmap(array, title, path, color="Greens", figformat="png"):
+def spatial_heatmap(array, path, title=None, color="Greens", figformat="png"):
     """Taking channel information and creating post run channel activity plots."""
-    logging.info("Nanoplotter: Creating activity map for {} using statistics from {} reads.".format(
-        title.lower(), array.size))
+    logging.info("Nanoplotter: Creating heatmap of reads per channel using {} reads."
+                 .format(array.size))
     activity_map = Plot(
         path=path + "." + figformat,
-        title="Channel activity")
+        title="Number of reads generated per channel")
     layout = make_layout()
     activityData = np.zeros((16, 32))
     valueCounts = pd.value_counts(pd.Series(array))
@@ -394,7 +410,7 @@ def spatial_heatmap(array, title, path, color="Greens", figformat="png"):
         cbar_kws={"orientation": "horizontal"},
         cmap=color,
         linewidths=0.20)
-    ax.set_title(title)
+    ax.set_title(title or activity_map.title)
     fig = ax.get_figure()
     fig.savefig(activity_map.path, format=figformat, dpi=100)
     plt.close("all")
