@@ -283,7 +283,7 @@ def time_plots(df, path, title=None, color="#4CB391", figformat="png"):
         xlabel='Interval (hours)',
         ylabel="Read length",
         title=title or time_length.title)
-    plt.xticks(rotation=30, ha='right')
+    plt.xticks(rotation=30, ha='center')
     fig = ax.get_figure()
     fig.savefig(
         fname=time_length.path,
@@ -310,7 +310,7 @@ def time_plots(df, path, title=None, color="#4CB391", figformat="png"):
             xlabel='Interval (hours)',
             ylabel="Basecall quality",
             title=title or time_qual.title)
-        plt.xticks(rotation=30, ha='right')
+        plt.xticks(rotation=30, ha='center')
         fig = ax.get_figure()
         fig.savefig(
             fname=time_qual.path,
@@ -445,7 +445,7 @@ def violin_or_box_plot(df, y, figformat, path, violin=True, log=False):
         ax.set(
             yticks=np.log10(ticks),
             yticklabels=ticks)
-    plt.xticks(rotation=30, ha='right')
+    plt.xticks(rotation=30, ha='center')
     fig = ax.get_figure()
     fig.savefig(
         fname=path + "NanoComp_" + y.replace(' ', '_') + '.' + figformat,
@@ -462,7 +462,7 @@ def output_barplot(df, figformat, path):
         data=df,
         order=df["dataset"].unique())
     ax.set(xlabel='Number of reads')
-    plt.xticks(rotation=30, ha='right')
+    plt.xticks(rotation=30, ha='center')
     fig = ax.get_figure()
     fig.savefig(
         fname=path + "NanoComp_number_of_reads." + figformat,
@@ -476,7 +476,7 @@ def output_barplot(df, figformat, path):
         y=df.groupby('dataset')['lengths'].sum() / 1e6,
         order=df["dataset"].unique())
     ax.set(ylabel='Total megabase sequenced')
-    plt.xticks(rotation=30, ha='right')
+    plt.xticks(rotation=30, ha='center')
     fig = ax.get_figure()
     fig.savefig(
         fname=path + "NanoComp_total_throughput." + figformat,
