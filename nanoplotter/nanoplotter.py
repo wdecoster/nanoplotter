@@ -417,12 +417,17 @@ def spatial_heatmap(array, path, title=None, color="Greens", figformat="png"):
     return [activity_map]
 
 
-def violin_or_box_plot(df, y, figformat, path, violin=True, log=False):
+def violin_or_box_plot(df, y, figformat, path, title=None, violin=True, log=False):
     """Create a violin or boxplot from the received DataFrame.
 
     The x-axis should be divided based on the 'dataset' column,
     the y-axis is specified in the arguments
     """
+    Violin_Comp = Plot(
+        path=path + "NanoComp_" + y.replace(' ', '_') + '.' + figformat,
+        title="Comparing {}".format(y))
+    if y == "quals":
+        Violin_Comp.title = "Comparing base call quality scores"
     if violin:
         logging.info("Nanoplotter: Creating violin plot for {}.".format(y))
         ax = sns.violinplot(
@@ -445,41 +450,53 @@ def violin_or_box_plot(df, y, figformat, path, violin=True, log=False):
         ax.set(
             yticks=np.log10(ticks),
             yticklabels=ticks)
+    ax.set(title=title or Violin_Comp.title)
     plt.xticks(rotation=30, ha='center')
     fig = ax.get_figure()
     fig.savefig(
-        fname=path + "NanoComp_" + y.replace(' ', '_') + '.' + figformat,
+        fname=Violin_Comp.path,
         format=figformat,
         dpi=100,
         bbox_inches='tight')
     plt.close("all")
 
 
-def output_barplot(df, figformat, path):
+def output_barplot(df, figformat, path, title=None):
     """Create barplots based on number of reads and total sum of nucleotides sequenced."""
+    logging.info("Creating barplots for number of reads and total throughput.")
+    Read_Count = Plot(
+        path=path + "NanoComp_number_of_reads." + figformat,
+        title="Comparing number of reads")
     ax = sns.countplot(
         x="dataset",
         data=df,
         order=df["dataset"].unique())
-    ax.set(xlabel='Number of reads')
+    ax.set(
+        ylabel='Number of reads',
+        title=title or Read_Count.title)
     plt.xticks(rotation=30, ha='center')
     fig = ax.get_figure()
     fig.savefig(
-        fname=path + "NanoComp_number_of_reads." + figformat,
+        fname=Read_Count.path,
         format=figformat,
         dpi=100,
         bbox_inches='tight')
     plt.close("all")
 
+    Throughput_Bases = Plot(
+        path=path + "NanoComp_total_throughput." + figformat,
+        title="Comparing throughput in megabases sequenced")
     ax = sns.barplot(
         x=df["dataset"].unique(),
         y=df.groupby('dataset')['lengths'].sum() / 1e6,
         order=df["dataset"].unique())
-    ax.set(ylabel='Total megabase sequenced')
+    ax.set(
+        ylabel='Total megabase sequenced',
+        title=title or Throughput_Bases.title)
     plt.xticks(rotation=30, ha='center')
     fig = ax.get_figure()
     fig.savefig(
-        fname=path + "NanoComp_total_throughput." + figformat,
+        fname=Throughput_Bases.path,
         format=figformat,
         dpi=100,
         bbox_inches='tight')
