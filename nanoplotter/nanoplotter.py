@@ -31,6 +31,8 @@ import pandas as pd
 import numpy as np
 import base64
 from math import ceil
+import io
+import urllib
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -45,11 +47,26 @@ class Plot(object):
     def __init__(self, path, title):
         self.path = path
         self.title = title
+        self.fig = None
 
     def encode(self):
-        """Return the base64 encoding of the plot and insert in html image tag."""
+        if self.fig:
+            return self.encode2()
+        else:
+            return self.encode1()
+
+    def encode1(self):
+        """Return the base64 encoding of the figure file and insert in html image tag."""
         data_uri = base64.b64encode(open(self.path, 'rb').read()).decode('utf-8').replace('\n', '')
         return '<img src="data:image/png;base64,{0}">'.format(data_uri)
+
+    def encode2(self):
+        """Return the base64 encoding of the fig attribute and insert in html image tag."""
+        buf = io.BytesIO()
+        self.fig.savefig(buf, format='png')
+        buf.seek(0)
+        string = base64.b64encode(buf.read())
+        return '<img src="data:image/png;base64,{0}">'.format(urllib.parse.quote(string))
 
 
 def check_valid_color(color):
@@ -123,6 +140,7 @@ def scatter(x, y, names, path, plots, color="#4CB391", figformat="png",
             plot.ax_joint.set_xticklabels(ticks)
         plt.subplots_adjust(top=0.90)
         plot.fig.suptitle(title or "{} vs {} plot".format(names[0], names[1]), fontsize=25)
+        hex_plot.fig = plot
         plot.savefig(hex_plot.path, format=figformat, dpi=100)
         plots_made.append(hex_plot)
 
@@ -151,6 +169,7 @@ def scatter(x, y, names, path, plots, color="#4CB391", figformat="png",
             plot.ax_joint.set_xticklabels(ticks)
         plt.subplots_adjust(top=0.90)
         plot.fig.suptitle(title or "{} vs {} plot".format(names[0], names[1]), fontsize=25)
+        dot_plot.fig = plot
         plot.savefig(dot_plot.path, format=figformat, dpi=100)
         plots_made.append(dot_plot)
 
@@ -179,6 +198,7 @@ def scatter(x, y, names, path, plots, color="#4CB391", figformat="png",
             plot.ax_joint.set_xticklabels(ticks)
         plt.subplots_adjust(top=0.90)
         plot.fig.suptitle(title or "{} vs {} plot".format(names[0], names[1]), fontsize=25)
+        kde_plot.fig = plot
         plot.savefig(kde_plot.path, format=figformat, dpi=100)
         plots_made.append(kde_plot)
 
@@ -260,6 +280,7 @@ def time_plots(df, path, title=None, color="#4CB391", figformat="png"):
         ylabel='Cumulative yield in gigabase',
         title=title or cum_yield.title)
     fig = ax.get_figure()
+    cum_yield.fig = fig
     fig.savefig(cum_yield.path, format=figformat, dpi=100)
     plt.close("all")
 
@@ -285,6 +306,7 @@ def time_plots(df, path, title=None, color="#4CB391", figformat="png"):
         title=title or time_length.title)
     plt.xticks(rotation=30, ha='center')
     fig = ax.get_figure()
+    time_length.fig = fig
     fig.savefig(
         fname=time_length.path,
         format=figformat,
@@ -312,6 +334,7 @@ def time_plots(df, path, title=None, color="#4CB391", figformat="png"):
             title=title or time_qual.title)
         plt.xticks(rotation=30, ha='center')
         fig = ax.get_figure()
+        time_qual.fig = fig
         fig.savefig(
             fname=time_qual.path,
             format=figformat,
@@ -347,6 +370,7 @@ def length_plots(array, name, path, title=None, n50=None, color="#4CB391", figfo
         ylabel='Number of reads',
         title=title or histogram.title)
     fig = ax.get_figure()
+    histogram.fig = fig
     fig.savefig(histogram.path, format=figformat, dpi=100)
     plt.close("all")
 
@@ -370,6 +394,7 @@ def length_plots(array, name, path, title=None, n50=None, color="#4CB391", figfo
         plt.annotate('N50', xy=(np.log10(n50), np.amax(
             [h.get_height() for h in ax.patches])), size=8)
     fig = ax.get_figure()
+    log_histogram.fig = fig
     fig.savefig(log_histogram.path, format=figformat, dpi=100)
     plt.close("all")
     return [histogram, log_histogram]
@@ -412,6 +437,7 @@ def spatial_heatmap(array, path, title=None, color="Greens", figformat="png"):
         linewidths=0.20)
     ax.set_title(title or activity_map.title)
     fig = ax.get_figure()
+    activity_map.fig = fig
     fig.savefig(activity_map.path, format=figformat, dpi=100)
     plt.close("all")
     return [activity_map]
@@ -423,11 +449,11 @@ def violin_or_box_plot(df, y, figformat, path, title=None, violin=True, log=Fals
     The x-axis should be divided based on the 'dataset' column,
     the y-axis is specified in the arguments
     """
-    Violin_Comp = Plot(
+    violin_comp = Plot(
         path=path + "NanoComp_" + y.replace(' ', '_') + '.' + figformat,
         title="Comparing {}".format(y))
     if y == "quals":
-        Violin_Comp.title = "Comparing base call quality scores"
+        violin_comp.title = "Comparing base call quality scores"
     if violin:
         logging.info("Nanoplotter: Creating violin plot for {}.".format(y))
         ax = sns.violinplot(
@@ -450,11 +476,12 @@ def violin_or_box_plot(df, y, figformat, path, title=None, violin=True, log=Fals
         ax.set(
             yticks=np.log10(ticks),
             yticklabels=ticks)
-    ax.set(title=title or Violin_Comp.title)
+    ax.set(title=title or violin_comp.title)
     plt.xticks(rotation=30, ha='center')
     fig = ax.get_figure()
+    violin_comp.fig = fig
     fig.savefig(
-        fname=Violin_Comp.path,
+        fname=violin_comp.path,
         format=figformat,
         dpi=100,
         bbox_inches='tight')
@@ -464,7 +491,7 @@ def violin_or_box_plot(df, y, figformat, path, title=None, violin=True, log=Fals
 def output_barplot(df, figformat, path, title=None):
     """Create barplots based on number of reads and total sum of nucleotides sequenced."""
     logging.info("Creating barplots for number of reads and total throughput.")
-    Read_Count = Plot(
+    read_count = Plot(
         path=path + "NanoComp_number_of_reads." + figformat,
         title="Comparing number of reads")
     ax = sns.countplot(
@@ -473,17 +500,18 @@ def output_barplot(df, figformat, path, title=None):
         order=df["dataset"].unique())
     ax.set(
         ylabel='Number of reads',
-        title=title or Read_Count.title)
+        title=title or read_count.title)
     plt.xticks(rotation=30, ha='center')
     fig = ax.get_figure()
+    read_count.fig = fig
     fig.savefig(
-        fname=Read_Count.path,
+        fname=read_count.path,
         format=figformat,
         dpi=100,
         bbox_inches='tight')
     plt.close("all")
 
-    Throughput_Bases = Plot(
+    throughput_bases = Plot(
         path=path + "NanoComp_total_throughput." + figformat,
         title="Comparing throughput in megabases sequenced")
     ax = sns.barplot(
@@ -492,11 +520,12 @@ def output_barplot(df, figformat, path, title=None):
         order=df["dataset"].unique())
     ax.set(
         ylabel='Total megabase sequenced',
-        title=title or Throughput_Bases.title)
+        title=title or throughput_bases.title)
     plt.xticks(rotation=30, ha='center')
     fig = ax.get_figure()
+    throughput_bases.fig = fig
     fig.savefig(
-        fname=Throughput_Bases.path,
+        fname=throughput_bases.path,
         format=figformat,
         dpi=100,
         bbox_inches='tight')
