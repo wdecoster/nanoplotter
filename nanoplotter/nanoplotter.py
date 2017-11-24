@@ -486,6 +486,7 @@ def violin_or_box_plot(df, y, figformat, path, title=None, violin=True, log=Fals
         dpi=100,
         bbox_inches='tight')
     plt.close("all")
+    return [violin_comp]
 
 
 def output_barplot(df, figformat, path, title=None):
@@ -530,6 +531,7 @@ def output_barplot(df, figformat, path, title=None):
         dpi=100,
         bbox_inches='tight')
     plt.close("all")
+    return read_count, throughput_bases
 
 
 def run_tests():
