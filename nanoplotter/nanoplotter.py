@@ -516,10 +516,11 @@ def output_barplot(df, figformat, path, title=None):
     throughput_bases = Plot(
         path=path + "NanoComp_total_throughput." + figformat,
         title="Comparing throughput in megabases sequenced")
+    throughput = df.groupby('dataset')['lengths'].sum()
     ax = sns.barplot(
-        x=df["dataset"].unique(),
-        y=df.groupby('dataset')['lengths'].sum() / 1e6,
-        order=df["dataset"].unique())
+        x=list(throughput.index),
+        y=throughput / 1e6,
+        order=list(throughput.index))
     ax.set(
         ylabel='Total megabase sequenced',
         title=title or throughput_bases.title)
