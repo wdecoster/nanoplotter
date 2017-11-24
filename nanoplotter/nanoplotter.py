@@ -341,6 +341,7 @@ def time_plots(df, path, title=None, color="#4CB391", figformat="png"):
             dpi=100,
             bbox_inches='tight')
         plots.append(time_qual)
+        plt.close("all")
     return plots
 
 
