@@ -463,7 +463,7 @@ def violin_or_box_plot(df, y, figformat, path, title=None, violin=True, log=Fals
             data=df,
             inner=None,
             cut=0,
-            order=df["dataset"].unique(),
+            order=sorted(df["dataset"].unique()),
             linewidth=0)
     else:
         logging.info("Nanoplotter: Creating box plot for {}.".format(y))
@@ -471,7 +471,7 @@ def violin_or_box_plot(df, y, figformat, path, title=None, violin=True, log=Fals
             x="dataset",
             y=y,
             data=df,
-            order=df["dataset"].unique())
+            order=sorted(df["dataset"].unique()))
     if log:
         ticks = [10**i for i in range(10) if not 10**i > 10 * (10**np.amax(df[y]))]
         ax.set(
@@ -499,7 +499,7 @@ def output_barplot(df, figformat, path, title=None):
     ax = sns.countplot(
         x="dataset",
         data=df,
-        order=df["dataset"].unique())
+        order=sorted(df["dataset"].unique()))
     ax.set(
         ylabel='Number of reads',
         title=title or read_count.title)
@@ -520,7 +520,7 @@ def output_barplot(df, figformat, path, title=None):
     ax = sns.barplot(
         x=list(throughput.index),
         y=throughput / 1e6,
-        order=list(throughput.index))
+        order=sorted(df["dataset"].unique()))
     ax.set(
         ylabel='Total megabase sequenced',
         title=title or throughput_bases.title)
