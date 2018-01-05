@@ -33,6 +33,7 @@ import base64
 from math import ceil
 import io
 import urllib
+from collections import namedtuple
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -67,14 +68,6 @@ class Plot(object):
         buf.seek(0)
         string = base64.b64encode(buf.read())
         return '<img src="data:image/png;base64,{0}">'.format(urllib.parse.quote(string))
-
-
-class Layout(object):
-    def __init__(self, structure, template, xticks, yticks):
-        self.structure = structure
-        self.template = template
-        self.xticks = xticks
-        self.yticks = yticks
 
 
 def check_valid_color(color):
@@ -362,81 +355,75 @@ def length_plots(array, name, path, title=None, n50=None, color="#4CB391", figfo
                      .format(array.size, n50, maxvalx))
     else:
         logging.info("Nanoplotter: Using {} reads maximum of {}bp.".format(array.size, maxvalx))
-    histogram = Plot(
-        path=path + "Histogram" + name.replace(' ', '') + "." + figformat,
-        title="Histogram of read lengths")
-    ax = sns.distplot(
-        a=array,
-        kde=False,
-        hist=True,
-        bins=round(int(maxvalx) / 100),
-        color=color)
-    if n50:
-        plt.axvline(n50)
-        plt.annotate('N50', xy=(n50, np.amax([h.get_height() for h in ax.patches])), size=8)
-    ax.set(
-        xlabel='Read length',
-        ylabel='Number of reads',
-        title=title or histogram.title)
-    fig = ax.get_figure()
-    histogram.fig = fig
-    fig.savefig(histogram.path, format=figformat, dpi=100)
-    plt.close("all")
 
-    log_histogram = Plot(
-        path=path + "LogTransformedHistogram" + name.replace(' ', '') + "." + figformat,
-        title="Histogram of read lengths after log transformation")
-    ax = sns.distplot(
-        a=np.log10(array),
-        kde=False,
-        hist=True,
-        color=color)
-    ticks = [10**i for i in range(10) if not 10**i > 10 * maxvalx]
-    ax.set(
-        xticks=np.log10(ticks),
-        xticklabels=ticks,
-        xlabel='Read length',
-        ylabel='Number of reads',
-        title=title or log_histogram.title)
-    if n50:
-        plt.axvline(np.log10(n50))
-        plt.annotate('N50', xy=(np.log10(n50), np.amax(
-            [h.get_height() for h in ax.patches])), size=8)
-    fig = ax.get_figure()
-    log_histogram.fig = fig
-    fig.savefig(log_histogram.path, format=figformat, dpi=100)
-    plt.close("all")
-    return [histogram, log_histogram]
+    HistType = namedtuple('HistType', 'weight name binsize ylabel')
+    plots = []
+    for h_type in [HistType(None, "", 100, "Number of reads"),
+                   HistType(array, "Weighted ", 500, "Number of bases")]:
+        histogram = Plot(
+            path=path + h_type.name.replace(" ", "_") + "Histogram" +
+            name.replace(' ', '') + "." + figformat,
+            title=h_type.name + "Histogram of read lengths")
+        ax = sns.distplot(
+            a=array,
+            kde=False,
+            hist=True,
+            bins=round(int(maxvalx) / h_type.binsize),
+            color=color,
+            hist_kws={"weights": h_type.weight})
+        if n50:
+            plt.axvline(n50)
+            plt.annotate('N50', xy=(n50, np.amax([h.get_height() for h in ax.patches])), size=8)
+        ax.set(
+            xlabel='Read length',
+            ylabel=h_type.ylabel,
+            title=title or histogram.title)
+        fig = ax.get_figure()
+        histogram.fig = fig
+        fig.savefig(histogram.path, format=figformat, dpi=100)
+        plt.close("all")
+
+        log_histogram = Plot(
+            path=path + h_type.name.replace(" ", "_") + "LogTransformed_Histogram" +
+            name.replace(' ', '') + "." + figformat,
+            title=h_type.name + "Histogram of read lengths after log transformation")
+        ax = sns.distplot(
+            a=np.log10(array),
+            kde=False,
+            hist=True,
+            color=color,
+            hist_kws={"weights": h_type.weight})
+        ticks = [10**i for i in range(10) if not 10**i > 10 * maxvalx]
+        ax.set(
+            xticks=np.log10(ticks),
+            xticklabels=ticks,
+            xlabel='Read length',
+            ylabel=h_type.ylabel,
+            title=title or log_histogram.title)
+        if n50:
+            plt.axvline(np.log10(n50))
+            plt.annotate('N50', xy=(np.log10(n50), np.amax(
+                [h.get_height() for h in ax.patches])), size=8)
+        fig = ax.get_figure()
+        log_histogram.fig = fig
+        fig.savefig(log_histogram.path, format=figformat, dpi=100)
+        plt.close("all")
+        plots.extend([histogram, log_histogram])
+    return plots
 
 
-def make_layout(maxval):
+def make_layout():
     """Make the physical layout of the MinION flowcell.
 
     based on https://bioinformatics.stackexchange.com/a/749/681
     returned as a numpy array
     """
-    if maxval > 512:
-        return Layout(
-            structure=np.concatenate([np.array([list(range(10 * i + 1, i * 10 + 11))
-                                                for i in range(25)]) + j
-                                      for j in range(0, 3000, 250)],
-                                     axis=1),
-            template=np.zeros((25, 120)),
-            xticks=range(1, 121),
-            yticks=range(1, 26))
-    else:
-        layoutlist = []
-        for i, j in zip(
-                [33, 481, 417, 353, 289, 225, 161, 97],
-                [8, 456, 392, 328, 264, 200, 136, 72]):
-            for n in range(4):
-                layoutlist.append(list(range(i + n * 8, (i + n * 8) + 8, 1)) +
-                                  list(range(j + n * 8, (j + n * 8) - 8, -1)))
-        return Layout(
-            structure=np.array(layoutlist).transpose(),
-            template=np.zeros((16, 32)),
-            xticks=range(1, 33),
-            yticks=range(1, 17))
+    layoutlist = []
+    for i, j in zip([33, 481, 417, 353, 289, 225, 161, 97], [8, 456, 392, 328, 264, 200, 136, 72]):
+        for n in range(4):
+            layoutlist.append(list(range(i + n * 8, (i + n * 8) + 8, 1)) +
+                              list(range(j + n * 8, (j + n * 8) - 8, -1)))
+    return np.array(layoutlist).transpose()
 
 
 def spatial_heatmap(array, path, title=None, color="Greens", figformat="png"):
@@ -446,15 +433,16 @@ def spatial_heatmap(array, path, title=None, color="Greens", figformat="png"):
     activity_map = Plot(
         path=path + "." + figformat,
         title="Number of reads generated per channel")
-    layout = make_layout(maxval=np.amax(array))
+    layout = make_layout()
+    activityData = np.zeros((16, 32))
     valueCounts = pd.value_counts(pd.Series(array))
     for entry in valueCounts.keys():
-        layout.template[np.where(layout.structure == entry)] = valueCounts[entry]
+        activityData[np.where(layout == entry)] = valueCounts[entry]
     plt.figure()
     ax = sns.heatmap(
-        data=pd.DataFrame(layout.template, index=layout.yticks, columns=layout.xticks),
-        xticklabels="auto",
-        yticklabels="auto",
+        data=activityData,
+        xticklabels=range(1, 33),
+        yticklabels=range(1, 17),
         square=True,
         cbar_kws={"orientation": "horizontal"},
         cmap=color,
