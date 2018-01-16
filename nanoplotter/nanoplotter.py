@@ -286,7 +286,7 @@ def time_plots(df, path, title=None, color="#4CB391", figformat="png"):
         title=title or cum_yield_gb.title)
     fig = ax.get_figure()
     cum_yield_gb.fig = fig
-    fig.savefig(cum_yield_gb.path, format=figformat, dpi=100)
+    fig.savefig(cum_yield_gb.path, format=figformat, dpi=100, bbox_inches="tight")
     plt.close("all")
 
     cum_yield_reads = Plot(
@@ -308,7 +308,7 @@ def time_plots(df, path, title=None, color="#4CB391", figformat="png"):
         title=title or cum_yield_reads.title)
     fig = ax.get_figure()
     cum_yield_reads.fig = fig
-    fig.savefig(cum_yield_reads.path, format=figformat, dpi=100)
+    fig.savefig(cum_yield_reads.path, format=figformat, dpi=100, bbox_inches="tight")
     plt.close("all")
 
     time_length = Plot(
