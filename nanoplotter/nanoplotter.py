@@ -254,7 +254,7 @@ def time_plots(df, path, title=None, color="#4CB391", figformat="png"):
     dfs = check_valid_time_and_sort(df, "start_time")
     logging.info("Nanoplotter: Creating timeplots using {} reads.".format(len(dfs)))
     dfs["cumyield_gb"] = dfs["lengths"].cumsum() / 10**9
-    dfs_sparse = dfs.sample(min(2000, len(dfs.index)))
+    dfs_sparse = dfs.sample(min(4000, len(dfs.index)))
     dfs_sparse["start_time"] = dfs_sparse["start_time"].astype('timedelta64[s]')  # ?! dtype float64
     maxtime = dfs_sparse["start_time"].max()
     if maxtime < 72 * 3600:
@@ -273,7 +273,7 @@ def time_plots(df, path, title=None, color="#4CB391", figformat="png"):
         x_ci=None,
         fit_reg=False,
         color=color,
-        scatter_kws={"s": 5})
+        scatter_kws={"s": 3})
     ax.set(
         xticks=[i * 3600 for i in ticks],
         xticklabels=ticks,
