@@ -142,7 +142,7 @@ def scatter(x, y, names, path, plots, color="#4CB391", figformat="png",
         plt.subplots_adjust(top=0.90)
         plot.fig.suptitle(title or "{} vs {} plot".format(names[0], names[1]), fontsize=25)
         hex_plot.fig = plot
-        plot.savefig(hex_plot.path, format=figformat, dpi=100)
+        plot.savefig(hex_plot.path, format=figformat, dpi=100, bbox_inches="tight")
         plots_made.append(hex_plot)
 
     sns.set(style="darkgrid")
@@ -171,7 +171,7 @@ def scatter(x, y, names, path, plots, color="#4CB391", figformat="png",
         plt.subplots_adjust(top=0.90)
         plot.fig.suptitle(title or "{} vs {} plot".format(names[0], names[1]), fontsize=25)
         dot_plot.fig = plot
-        plot.savefig(dot_plot.path, format=figformat, dpi=100)
+        plot.savefig(dot_plot.path, format=figformat, dpi=100, bbox_inches="tight")
         plots_made.append(dot_plot)
 
     if plots["kde"]:
@@ -200,7 +200,7 @@ def scatter(x, y, names, path, plots, color="#4CB391", figformat="png",
         plt.subplots_adjust(top=0.90)
         plot.fig.suptitle(title or "{} vs {} plot".format(names[0], names[1]), fontsize=25)
         kde_plot.fig = plot
-        plot.savefig(kde_plot.path, format=figformat, dpi=100)
+        plot.savefig(kde_plot.path, format=figformat, dpi=100, bbox_inches="tight")
         plots_made.append(kde_plot)
 
     if plots["pauvre"] and names == ['Read lengths', 'Average read quality']:
@@ -404,9 +404,10 @@ def length_plots(array, name, path, title=None, n50=None, color="#4CB391", figfo
             xlabel='Read length',
             ylabel=h_type.ylabel,
             title=title or histogram.title)
+        plt.ticklabel_format(style='plain', axis='y')
         fig = ax.get_figure()
         histogram.fig = fig
-        fig.savefig(histogram.path, format=figformat, dpi=100)
+        fig.savefig(histogram.path, format=figformat, dpi=100, bbox_inches="tight")
         plt.close("all")
 
         log_histogram = Plot(
@@ -430,9 +431,10 @@ def length_plots(array, name, path, title=None, n50=None, color="#4CB391", figfo
             plt.axvline(np.log10(n50))
             plt.annotate('N50', xy=(np.log10(n50), np.amax(
                 [h.get_height() for h in ax.patches])), size=8)
+        plt.ticklabel_format(style='plain', axis='y')
         fig = ax.get_figure()
         log_histogram.fig = fig
-        fig.savefig(log_histogram.path, format=figformat, dpi=100)
+        fig.savefig(log_histogram.path, format=figformat, dpi=100, bbox_inches="tight")
         plt.close("all")
         plots.extend([histogram, log_histogram])
     return plots
@@ -476,7 +478,7 @@ def spatial_heatmap(array, path, title=None, color="Greens", figformat="png"):
     ax.set_title(title or activity_map.title)
     fig = ax.get_figure()
     activity_map.fig = fig
-    fig.savefig(activity_map.path, format=figformat, dpi=100)
+    fig.savefig(activity_map.path, format=figformat, dpi=100, bbox_inches="tight")
     plt.close("all")
     return [activity_map]
 
