@@ -234,10 +234,11 @@ def check_valid_time_and_sort(df, timescol, days=5):
     """Check if the data contains reads created within the same `days` timeframe.
 
     if not, print warning and only return part of the data which is within `days` days
+    Resetting the index twice to get also an "index" column for plotting the cum_yield_reads plot
     """
     timediff = (df[timescol].max() - df[timescol].min()).days
     if timediff < days:
-        return df.sort_values(timescol)
+        return df.sort_values(timescol).reset_index(drop=True).reset_index()
     else:
         sys.stderr.write("\nWarning: data generated is from more than {} days.\n".format(str(days)))
         sys.stderr.write("Likely this indicates you are combining multiple runs.\n")
@@ -246,7 +247,10 @@ def check_valid_time_and_sort(df, timescol, days=5):
                 str(days)))
         logging.warning("Time plots truncated to first {} days: invalid timespan: {} days".format(
             str(days), str(timediff)))
-        return df[df[timescol] < timedelta(days=days)].sort_values(timescol)
+        return df[df[timescol] < timedelta(days=days)] \
+            .sort_values(timescol) \
+            .reset_index(drop=True) \
+            .reset_index()
 
 
 def time_plots(df, path, title=None, color="#4CB391", figformat="png"):
@@ -263,8 +267,8 @@ def time_plots(df, path, title=None, color="#4CB391", figformat="png"):
         steps = 8
     ticks = [int(i) for i in range(0, 168, steps) if not i > (maxtime / 3600)]
 
-    cum_yield = Plot(
-        path=path + "CumulativeYieldPlot." + figformat,
+    cum_yield_gb = Plot(
+        path=path + "CumulativeYieldPlot_Gigabases." + figformat,
         title="Cumulative yield")
     ax = sns.regplot(
         x='start_time',
@@ -279,10 +283,32 @@ def time_plots(df, path, title=None, color="#4CB391", figformat="png"):
         xticklabels=ticks,
         xlabel='Run time (hours)',
         ylabel='Cumulative yield in gigabase',
-        title=title or cum_yield.title)
+        title=title or cum_yield_gb.title)
     fig = ax.get_figure()
-    cum_yield.fig = fig
-    fig.savefig(cum_yield.path, format=figformat, dpi=100)
+    cum_yield_gb.fig = fig
+    fig.savefig(cum_yield_gb.path, format=figformat, dpi=100)
+    plt.close("all")
+
+    cum_yield_reads = Plot(
+        path=path + "CumulativeYieldPlot_NumberOfReads." + figformat,
+        title="Cumulative yield")
+    ax = sns.regplot(
+        x='start_time',
+        y="index",
+        data=dfs_sparse,
+        x_ci=None,
+        fit_reg=False,
+        color=color,
+        scatter_kws={"s": 3})
+    ax.set(
+        xticks=[i * 3600 for i in ticks],
+        xticklabels=ticks,
+        xlabel='Run time (hours)',
+        ylabel='Cumulative yield in number of reads',
+        title=title or cum_yield_reads.title)
+    fig = ax.get_figure()
+    cum_yield_reads.fig = fig
+    fig.savefig(cum_yield_reads.path, format=figformat, dpi=100)
     plt.close("all")
 
     time_length = Plot(
@@ -315,7 +341,7 @@ def time_plots(df, path, title=None, color="#4CB391", figformat="png"):
         bbox_inches='tight')
     plt.close("all")
 
-    plots = [cum_yield, time_length]
+    plots = [cum_yield_gb, cum_yield_reads, time_length]
 
     if "quals" in dfs:
         time_qual = Plot(
