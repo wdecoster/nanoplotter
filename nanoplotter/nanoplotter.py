@@ -142,7 +142,7 @@ def scatter(x, y, names, path, plots, color="#4CB391", figformat="png",
         plt.subplots_adjust(top=0.90)
         plot.fig.suptitle(title or "{} vs {} plot".format(names[0], names[1]), fontsize=25)
         hex_plot.fig = plot
-        plot.savefig(hex_plot.path, format=figformat, dpi=100)
+        plot.savefig(hex_plot.path, format=figformat, dpi=100, bbox_inches="tight")
         plots_made.append(hex_plot)
 
     sns.set(style="darkgrid")
@@ -171,7 +171,7 @@ def scatter(x, y, names, path, plots, color="#4CB391", figformat="png",
         plt.subplots_adjust(top=0.90)
         plot.fig.suptitle(title or "{} vs {} plot".format(names[0], names[1]), fontsize=25)
         dot_plot.fig = plot
-        plot.savefig(dot_plot.path, format=figformat, dpi=100)
+        plot.savefig(dot_plot.path, format=figformat, dpi=100, bbox_inches="tight")
         plots_made.append(dot_plot)
 
     if plots["kde"]:
@@ -200,7 +200,7 @@ def scatter(x, y, names, path, plots, color="#4CB391", figformat="png",
         plt.subplots_adjust(top=0.90)
         plot.fig.suptitle(title or "{} vs {} plot".format(names[0], names[1]), fontsize=25)
         kde_plot.fig = plot
-        plot.savefig(kde_plot.path, format=figformat, dpi=100)
+        plot.savefig(kde_plot.path, format=figformat, dpi=100, bbox_inches="tight")
         plots_made.append(kde_plot)
 
     if plots["pauvre"] and names == ['Read lengths', 'Average read quality']:
@@ -234,10 +234,11 @@ def check_valid_time_and_sort(df, timescol, days=5):
     """Check if the data contains reads created within the same `days` timeframe.
 
     if not, print warning and only return part of the data which is within `days` days
+    Resetting the index twice to get also an "index" column for plotting the cum_yield_reads plot
     """
     timediff = (df[timescol].max() - df[timescol].min()).days
     if timediff < days:
-        return df.sort_values(timescol)
+        return df.sort_values(timescol).reset_index(drop=True).reset_index()
     else:
         sys.stderr.write("\nWarning: data generated is from more than {} days.\n".format(str(days)))
         sys.stderr.write("Likely this indicates you are combining multiple runs.\n")
@@ -246,7 +247,10 @@ def check_valid_time_and_sort(df, timescol, days=5):
                 str(days)))
         logging.warning("Time plots truncated to first {} days: invalid timespan: {} days".format(
             str(days), str(timediff)))
-        return df[df[timescol] < timedelta(days=days)].sort_values(timescol)
+        return df[df[timescol] < timedelta(days=days)] \
+            .sort_values(timescol) \
+            .reset_index(drop=True) \
+            .reset_index()
 
 
 def time_plots(df, path, title=None, color="#4CB391", figformat="png"):
@@ -254,7 +258,7 @@ def time_plots(df, path, title=None, color="#4CB391", figformat="png"):
     dfs = check_valid_time_and_sort(df, "start_time")
     logging.info("Nanoplotter: Creating timeplots using {} reads.".format(len(dfs)))
     dfs["cumyield_gb"] = dfs["lengths"].cumsum() / 10**9
-    dfs_sparse = dfs.sample(min(2000, len(dfs.index)))
+    dfs_sparse = dfs.sample(min(4000, len(dfs.index)))
     dfs_sparse["start_time"] = dfs_sparse["start_time"].astype('timedelta64[s]')  # ?! dtype float64
     maxtime = dfs_sparse["start_time"].max()
     if maxtime < 72 * 3600:
@@ -263,8 +267,8 @@ def time_plots(df, path, title=None, color="#4CB391", figformat="png"):
         steps = 8
     ticks = [int(i) for i in range(0, 168, steps) if not i > (maxtime / 3600)]
 
-    cum_yield = Plot(
-        path=path + "CumulativeYieldPlot." + figformat,
+    cum_yield_gb = Plot(
+        path=path + "CumulativeYieldPlot_Gigabases." + figformat,
         title="Cumulative yield")
     ax = sns.regplot(
         x='start_time',
@@ -273,16 +277,38 @@ def time_plots(df, path, title=None, color="#4CB391", figformat="png"):
         x_ci=None,
         fit_reg=False,
         color=color,
-        scatter_kws={"s": 5})
+        scatter_kws={"s": 3})
     ax.set(
         xticks=[i * 3600 for i in ticks],
         xticklabels=ticks,
         xlabel='Run time (hours)',
         ylabel='Cumulative yield in gigabase',
-        title=title or cum_yield.title)
+        title=title or cum_yield_gb.title)
     fig = ax.get_figure()
-    cum_yield.fig = fig
-    fig.savefig(cum_yield.path, format=figformat, dpi=100)
+    cum_yield_gb.fig = fig
+    fig.savefig(cum_yield_gb.path, format=figformat, dpi=100, bbox_inches="tight")
+    plt.close("all")
+
+    cum_yield_reads = Plot(
+        path=path + "CumulativeYieldPlot_NumberOfReads." + figformat,
+        title="Cumulative yield")
+    ax = sns.regplot(
+        x='start_time',
+        y="index",
+        data=dfs_sparse,
+        x_ci=None,
+        fit_reg=False,
+        color=color,
+        scatter_kws={"s": 3})
+    ax.set(
+        xticks=[i * 3600 for i in ticks],
+        xticklabels=ticks,
+        xlabel='Run time (hours)',
+        ylabel='Cumulative yield in number of reads',
+        title=title or cum_yield_reads.title)
+    fig = ax.get_figure()
+    cum_yield_reads.fig = fig
+    fig.savefig(cum_yield_reads.path, format=figformat, dpi=100, bbox_inches="tight")
     plt.close("all")
 
     time_length = Plot(
@@ -315,7 +341,7 @@ def time_plots(df, path, title=None, color="#4CB391", figformat="png"):
         bbox_inches='tight')
     plt.close("all")
 
-    plots = [cum_yield, time_length]
+    plots = [cum_yield_gb, cum_yield_reads, time_length]
 
     if "quals" in dfs:
         time_qual = Plot(
@@ -378,9 +404,10 @@ def length_plots(array, name, path, title=None, n50=None, color="#4CB391", figfo
             xlabel='Read length',
             ylabel=h_type.ylabel,
             title=title or histogram.title)
+        plt.ticklabel_format(style='plain', axis='y')
         fig = ax.get_figure()
         histogram.fig = fig
-        fig.savefig(histogram.path, format=figformat, dpi=100)
+        fig.savefig(histogram.path, format=figformat, dpi=100, bbox_inches="tight")
         plt.close("all")
 
         log_histogram = Plot(
@@ -404,9 +431,10 @@ def length_plots(array, name, path, title=None, n50=None, color="#4CB391", figfo
             plt.axvline(np.log10(n50))
             plt.annotate('N50', xy=(np.log10(n50), np.amax(
                 [h.get_height() for h in ax.patches])), size=8)
+        plt.ticklabel_format(style='plain', axis='y')
         fig = ax.get_figure()
         log_histogram.fig = fig
-        fig.savefig(log_histogram.path, format=figformat, dpi=100)
+        fig.savefig(log_histogram.path, format=figformat, dpi=100, bbox_inches="tight")
         plt.close("all")
         plots.extend([histogram, log_histogram])
     return plots
@@ -450,7 +478,7 @@ def spatial_heatmap(array, path, title=None, color="Greens", figformat="png"):
     ax.set_title(title or activity_map.title)
     fig = ax.get_figure()
     activity_map.fig = fig
-    fig.savefig(activity_map.path, format=figformat, dpi=100)
+    fig.savefig(activity_map.path, format=figformat, dpi=100, bbox_inches="tight")
     plt.close("all")
     return [activity_map]
 
