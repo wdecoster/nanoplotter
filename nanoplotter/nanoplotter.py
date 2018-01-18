@@ -107,7 +107,7 @@ def scatter(x, y, names, path, plots, color="#4CB391", figformat="png",
     Create four types of bivariate plots of x vs y, containing marginal summaries
     -A scatter plot with histograms on axes
     -A hexagonal binned plot with histograms on axes
-    -A kernel density plot with density curves on axes, subsampled to 10000 reads if required
+    -A kernel density plot with density curves on axes
     -A pauvre-style plot using code from https://github.com/conchoecia/pauvre
     """
     logging.info("Nanoplotter: Creating {} vs {} plots using statistics from {} reads.".format(
