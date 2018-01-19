@@ -485,7 +485,7 @@ def spatial_heatmap(array, path, title=None, color="Greens", figformat="png"):
     return [activity_map]
 
 
-def violin_or_box_plot(df, y, figformat, path, title=None, violin=True, log=False):
+def violin_or_box_plot(df, y, figformat, path, title=None, violin=True, log=False, palette=None):
     """Create a violin or boxplot from the received DataFrame.
 
     The x-axis should be divided based on the 'dataset' column,
@@ -504,6 +504,7 @@ def violin_or_box_plot(df, y, figformat, path, title=None, violin=True, log=Fals
             data=df,
             inner=None,
             cut=0,
+            palette=palette,
             order=sorted(df["dataset"].unique()),
             linewidth=0)
     else:
@@ -512,6 +513,7 @@ def violin_or_box_plot(df, y, figformat, path, title=None, violin=True, log=Fals
             x="dataset",
             y=y,
             data=df,
+            palette=palette,
             order=sorted(df["dataset"].unique()))
     if log:
         ticks = [10**i for i in range(10) if not 10**i > 10 * (10**np.amax(df[y]))]
@@ -531,7 +533,7 @@ def violin_or_box_plot(df, y, figformat, path, title=None, violin=True, log=Fals
     return [violin_comp]
 
 
-def output_barplot(df, figformat, path, title=None):
+def output_barplot(df, figformat, path, title=None, palette=None):
     """Create barplots based on number of reads and total sum of nucleotides sequenced."""
     logging.info("Creating barplots for number of reads and total throughput.")
     read_count = Plot(
@@ -540,6 +542,7 @@ def output_barplot(df, figformat, path, title=None):
     ax = sns.countplot(
         x="dataset",
         data=df,
+        palette=palette,
         order=sorted(df["dataset"].unique()))
     ax.set(
         ylabel='Number of reads',
@@ -561,6 +564,7 @@ def output_barplot(df, figformat, path, title=None):
     ax = sns.barplot(
         x=list(throughput.index),
         y=throughput / 1e6,
+        palette=palette,
         order=sorted(df["dataset"].unique()))
     ax.set(
         ylabel='Total megabase sequenced',
