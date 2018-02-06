@@ -33,7 +33,7 @@ setup(
     install_requires=['pandas',
                       'numpy',
                       'scipy',
-                      'matplotlib>=2.0.0',
+                      'matplotlib>=2.1.0',
                       'seaborn',
                       "pauvre"],
     package_dir={'nanoplotter': 'nanoplotter'})
