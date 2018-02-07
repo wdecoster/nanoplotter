@@ -34,6 +34,6 @@ setup(
                       'numpy',
                       'scipy',
                       'matplotlib>=2.1.0',
-                      'seaborn',
+                      'seaborn>=0.8.1',
                       "pauvre"],
     package_dir={'nanoplotter': 'nanoplotter'})
