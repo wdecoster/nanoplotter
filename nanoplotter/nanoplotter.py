@@ -263,7 +263,9 @@ def time_plots(df, path, title=None, color="#4CB391", figformat="png"):
     dfs_sparse = dfs.sample(min(4000, len(dfs.index)))
     dfs_sparse["start_time"] = dfs_sparse["start_time"].astype('timedelta64[s]')  # ?! dtype float64
     maxtime = dfs_sparse["start_time"].max()
-    if maxtime < 72 * 3600:
+    if maxtime < 12 * 3600:
+        steps = 1
+    elif maxtime < 64 * 3600:
         steps = 4
     else:
         steps = 8
