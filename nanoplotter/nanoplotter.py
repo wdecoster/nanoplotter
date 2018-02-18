@@ -259,6 +259,82 @@ def time_plots(df, path, title=None, color="#4CB391", figformat="png"):
     """Making plots of time vs read length, time vs quality and cumulative yield."""
     dfs = check_valid_time_and_sort(df, "start_time")
     logging.info("Nanoplotter: Creating timeplots using {} reads.".format(len(dfs)))
+    cumyields = cumulative_yield(dfs=dfs,
+                                 path=path,
+                                 figformat=figformat,
+                                 title=title,
+                                 color=color)
+    violins = violin_plots_over_time(dfs=dfs,
+                                     path=path,
+                                     figformat=figformat,
+                                     title=title)
+    return cumyields + violins
+
+
+def violin_plots_over_time(dfs, path, figformat, title):
+    maxtime = dfs["start_time"].max().seconds
+    time_length = Plot(
+        path=path + "TimeLengthViolinPlot." + figformat,
+        title="Violin plot of read lengths over time")
+    sns.set_style("white")
+    labels = [str(i) + "-" + str(i + 6) for i in range(0, 168, 6) if not i > (maxtime / 3600)]
+    dfs['timebin'] = pd.cut(
+        x=dfs["start_time"],
+        bins=ceil((maxtime / 3600) / 6),
+        labels=labels)
+    ax = sns.violinplot(
+        x="timebin",
+        y="lengths",
+        data=dfs,
+        inner=None,
+        cut=0,
+        linewidth=0)
+    ax.set(
+        xlabel='Interval (hours)',
+        ylabel="Read length",
+        title=title or time_length.title)
+    plt.xticks(rotation=30, ha='center')
+    fig = ax.get_figure()
+    time_length.fig = fig
+    fig.savefig(
+        fname=time_length.path,
+        format=figformat,
+        dpi=100,
+        bbox_inches='tight')
+    plt.close("all")
+
+    plots = [time_length]
+
+    if "quals" in dfs:
+        time_qual = Plot(
+            path=path + "TimeQualityViolinPlot." + figformat,
+            title="Violin plot of quality over time")
+        sns.set_style("white")
+        ax = sns.violinplot(
+            x="timebin",
+            y="quals",
+            data=dfs,
+            inner=None,
+            cut=0,
+            linewidth=0)
+        ax.set(
+            xlabel='Interval (hours)',
+            ylabel="Basecall quality",
+            title=title or time_qual.title)
+        plt.xticks(rotation=30, ha='center')
+        fig = ax.get_figure()
+        time_qual.fig = fig
+        fig.savefig(
+            fname=time_qual.path,
+            format=figformat,
+            dpi=100,
+            bbox_inches='tight')
+        plots.append(time_qual)
+        plt.close("all")
+    return plots
+
+
+def cumulative_yield(dfs, path, figformat, title, color):
     dfs["cumyield_gb"] = dfs["lengths"].cumsum() / 10**9
     dfs_sparse = dfs.sample(min(4000, len(dfs.index)))
     dfs_sparse["start_time"] = dfs_sparse["start_time"].astype('timedelta64[s]')  # ?! dtype float64
@@ -314,66 +390,7 @@ def time_plots(df, path, title=None, color="#4CB391", figformat="png"):
     cum_yield_reads.fig = fig
     fig.savefig(cum_yield_reads.path, format=figformat, dpi=100, bbox_inches="tight")
     plt.close("all")
-
-    time_length = Plot(
-        path=path + "TimeLengthViolinPlot." + figformat,
-        title="Violin plot of read lengths over time")
-    sns.set_style("white")
-    labels = [str(i) + "-" + str(i + 6) for i in range(0, 168, 6) if not i > (maxtime / 3600)]
-    dfs['timebin'] = pd.cut(
-        x=dfs["start_time"],
-        bins=ceil((maxtime / 3600) / 6),
-        labels=labels)
-    ax = sns.violinplot(
-        x="timebin",
-        y="lengths",
-        data=dfs,
-        inner=None,
-        cut=0,
-        linewidth=0)
-    ax.set(
-        xlabel='Interval (hours)',
-        ylabel="Read length",
-        title=title or time_length.title)
-    plt.xticks(rotation=30, ha='center')
-    fig = ax.get_figure()
-    time_length.fig = fig
-    fig.savefig(
-        fname=time_length.path,
-        format=figformat,
-        dpi=100,
-        bbox_inches='tight')
-    plt.close("all")
-
-    plots = [cum_yield_gb, cum_yield_reads, time_length]
-
-    if "quals" in dfs:
-        time_qual = Plot(
-            path=path + "TimeQualityViolinPlot." + figformat,
-            title="Violin plot of quality over time")
-        sns.set_style("white")
-        ax = sns.violinplot(
-            x="timebin",
-            y="quals",
-            data=dfs,
-            inner=None,
-            cut=0,
-            linewidth=0)
-        ax.set(
-            xlabel='Interval (hours)',
-            ylabel="Basecall quality",
-            title=title or time_qual.title)
-        plt.xticks(rotation=30, ha='center')
-        fig = ax.get_figure()
-        time_qual.fig = fig
-        fig.savefig(
-            fname=time_qual.path,
-            format=figformat,
-            dpi=100,
-            bbox_inches='tight')
-        plots.append(time_qual)
-        plt.close("all")
-    return plots
+    return [cum_yield_gb, cum_yield_reads]
 
 
 def length_plots(array, name, path, title=None, n50=None, color="#4CB391", figformat="png"):
@@ -578,6 +595,10 @@ def output_barplot(df, figformat, path, title=None, palette=None):
         bbox_inches='tight')
     plt.close("all")
     return read_count, throughput_bases
+
+
+def compare_cumulative_yields(df, figformat, path, title=None, palette=None):
+    pass
 
 
 def run_tests():
