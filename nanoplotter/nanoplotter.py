@@ -598,7 +598,47 @@ def output_barplot(df, figformat, path, title=None, palette=None):
 
 
 def compare_cumulative_yields(df, figformat, path, title=None, palette=None):
-    pass
+    if palette is None:
+        palette = sns.color_palette()
+    dfs = check_valid_time_and_sort(df, "start_time")
+    logging.info("Nanoplotter: Creating cumulative yield plots using {} reads.".format(len(dfs)))
+
+    dfs["start_time"] = dfs["start_time"].astype('timedelta64[s]')  # ?! dtype float64
+    maxtime = dfs["start_time"].max()
+    if maxtime < 12 * 3600:
+        steps = 1
+    elif maxtime < 64 * 3600:
+        steps = 4
+    else:
+        steps = 8
+    ticks = [int(i) for i in range(0, 168, steps) if not i > (maxtime / 3600)]
+
+    cum_yield_gb = Plot(
+        path=path + "CumulativeYieldPlot_Gigabases." + figformat,
+        title="Cumulative yield")
+
+    fig, ax = plt.subplots()
+    for ds, col in zip(dfs["dataset"].unique(), palette):
+        sns.regplot(
+            x=dfs.loc[dfs["dataset"] == ds, 'start_time'],
+            y=dfs.loc[dfs["dataset"] == ds, "lengths"].cumsum() / 10**9,
+            x_ci=None,
+            fit_reg=False,
+            color=col,
+            scatter_kws={"s": 3},
+            label=ds,
+            ax=ax)
+    ax.set(
+        xticks=[i * 3600 for i in ticks],
+        xticklabels=ticks,
+        xlabel='Run time (hours)',
+        ylabel='Cumulative yield in gigabase',
+        title=title or cum_yield_gb.title)
+    ax.legend(loc="best")
+    cum_yield_gb.fig = fig
+    fig.savefig(cum_yield_gb.path, format=figformat, dpi=100, bbox_inches="tight")
+    plt.close("all")
+    return [cum_yield_gb]
 
 
 def run_tests():
