@@ -70,6 +70,14 @@ class Plot(object):
         return '<img src="data:image/png;base64,{0}">'.format(urllib.parse.quote(string))
 
 
+class Layout(object):
+    def __init__(self, structure, template, xticks, yticks):
+        self.structure = structure
+        self.template = template
+        self.xticks = xticks
+        self.yticks = yticks
+
+
 def check_valid_color(color):
     """Check if the color provided by the user is valid.
 
@@ -461,18 +469,33 @@ def length_plots(array, name, path, title=None, n50=None, color="#4CB391", figfo
     return plots
 
 
-def make_layout():
+def make_layout(maxval):
     """Make the physical layout of the MinION flowcell.
-
     based on https://bioinformatics.stackexchange.com/a/749/681
     returned as a numpy array
     """
-    layoutlist = []
-    for i, j in zip([33, 481, 417, 353, 289, 225, 161, 97], [8, 456, 392, 328, 264, 200, 136, 72]):
-        for n in range(4):
-            layoutlist.append(list(range(i + n * 8, (i + n * 8) + 8, 1)) +
-                              list(range(j + n * 8, (j + n * 8) - 8, -1)))
-    return np.array(layoutlist).transpose()
+    if maxval > 512:
+        return Layout(
+            structure=np.concatenate([np.array([list(range(10 * i + 1, i * 10 + 11))
+                                                for i in range(25)]) + j
+                                      for j in range(0, 3000, 250)],
+                                     axis=1),
+            template=np.zeros((25, 120)),
+            xticks=range(1, 121),
+            yticks=range(1, 26))
+    else:
+        layoutlist = []
+        for i, j in zip(
+                [33, 481, 417, 353, 289, 225, 161, 97],
+                [8, 456, 392, 328, 264, 200, 136, 72]):
+            for n in range(4):
+                layoutlist.append(list(range(i + n * 8, (i + n * 8) + 8, 1)) +
+                                  list(range(j + n * 8, (j + n * 8) - 8, -1)))
+        return Layout(
+            structure=np.array(layoutlist).transpose(),
+            template=np.zeros((16, 32)),
+            xticks=range(1, 33),
+            yticks=range(1, 17))
 
 
 def spatial_heatmap(array, path, title=None, color="Greens", figformat="png"):
@@ -482,16 +505,15 @@ def spatial_heatmap(array, path, title=None, color="Greens", figformat="png"):
     activity_map = Plot(
         path=path + "." + figformat,
         title="Number of reads generated per channel")
-    layout = make_layout()
-    activityData = np.zeros((16, 32))
+    layout = make_layout(maxval=np.amax(array))
     valueCounts = pd.value_counts(pd.Series(array))
     for entry in valueCounts.keys():
-        activityData[np.where(layout == entry)] = valueCounts[entry]
+        layout.template[np.where(layout.structure == entry)] = valueCounts[entry]
     plt.figure()
     ax = sns.heatmap(
-        data=activityData,
-        xticklabels=range(1, 33),
-        yticklabels=range(1, 17),
+        data=pd.DataFrame(layout.template, index=layout.yticks, columns=layout.xticks),
+        xticklabels="auto",
+        yticklabels="auto",
         square=True,
         cbar_kws={"orientation": "horizontal"},
         cmap=color,
@@ -499,7 +521,7 @@ def spatial_heatmap(array, path, title=None, color="Greens", figformat="png"):
     ax.set_title(title or activity_map.title)
     fig = ax.get_figure()
     activity_map.fig = fig
-    fig.savefig(activity_map.path, format=figformat, dpi=100, bbox_inches="tight")
+    fig.savefig(activity_map.path, format=figformat, dpi=100)
     plt.close("all")
     return [activity_map]
 
