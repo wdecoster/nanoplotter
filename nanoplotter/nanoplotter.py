@@ -183,12 +183,13 @@ def scatter(x, y, names, path, plots, color="#4CB391", figformat="png",
         plots_made.append(dot_plot)
 
     if plots["kde"]:
+        idx = np.random.choice(np.arange(len(x)), min(2000, len(x)), replace=False)
         kde_plot = Plot(
             path=path + "_kde." + figformat,
             title="{} vs {} plot using a kernel density estimation".format(names[0], names[1]))
         plot = sns.jointplot(
-            x=x,
-            y=y,
+            x=x[idx],
+            y=y[idx],
             kind="kde",
             clip=((0, np.Inf), (0, np.Inf)),
             xlim=(minvalx, maxvalx),
