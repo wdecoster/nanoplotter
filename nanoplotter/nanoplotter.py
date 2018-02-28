@@ -281,7 +281,7 @@ def time_plots(df, path, title=None, color="#4CB391", figformat="png"):
 
 
 def violin_plots_over_time(dfs, path, figformat, title):
-    maxtime = dfs["start_time"].max().seconds
+    maxtime = dfs["start_time"].max().total_seconds()
     time_length = Plot(
         path=path + "TimeLengthViolinPlot." + figformat,
         title="Violin plot of read lengths over time")
