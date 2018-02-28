@@ -637,7 +637,7 @@ def compare_cumulative_yields(df, figformat, path, title=None, palette=None):
     ticks = [int(i) for i in range(0, 168, steps) if not i > (maxtime / 3600)]
 
     cum_yield_gb = Plot(
-        path=path + "CumulativeYieldPlot_Gigabases." + figformat,
+        path=path + "NanoComp_CumulativeYieldPlot_Gigabases." + figformat,
         title="Cumulative yield")
 
     fig, ax = plt.subplots()
