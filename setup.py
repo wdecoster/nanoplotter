@@ -35,5 +35,6 @@ setup(
                       'scipy',
                       'matplotlib>=2.1.0',
                       'seaborn>=0.8.1',
-                      "pauvre"],
+                      "pauvre",
+                      "statsmodels>=0.8.0"],
     package_dir={'nanoplotter': 'nanoplotter'})
