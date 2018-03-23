@@ -527,7 +527,8 @@ def spatial_heatmap(array, path, title=None, color="Greens", figformat="png"):
     return [activity_map]
 
 
-def violin_or_box_plot(df, y, figformat, path, title=None, violin=True, log=False, palette=None):
+def violin_or_box_plot(df, y, figformat, path, y_name,
+                       title=None, violin=True, log=False, palette=None):
     """Create a violin or boxplot from the received DataFrame.
 
     The x-axis should be divided based on the 'dataset' column,
@@ -560,7 +561,8 @@ def violin_or_box_plot(df, y, figformat, path, title=None, violin=True, log=Fals
         ax.set(
             yticks=np.log10(ticks),
             yticklabels=ticks)
-    ax.set(title=title or violin_comp.title)
+    ax.set(title=title or violin_comp.title,
+           ylabel=y_name)
     plt.xticks(rotation=30, ha='center')
     fig = ax.get_figure()
     violin_comp.fig = fig
