@@ -467,7 +467,35 @@ def length_plots(array, name, path, title=None, n50=None, color="#4CB391", figfo
         fig.savefig(log_histogram.path, format=figformat, dpi=100, bbox_inches="tight")
         plt.close("all")
         plots.extend([histogram, log_histogram])
+    plots.append(yield_by_minimal_length_plot(array, name, path, title=None,
+                                              n50=None, color="#4CB391", figformat="png"))
     return plots
+
+
+def yield_by_minimal_length_plot(array, name, path,
+                                 title=None, n50=None, color="#4CB391", figformat="png"):
+    df = pd.DataFrame(data={"lengths": np.sort(array)[::-1]})
+    df["cumyield_gb"] = df["lengths"].cumsum() / 10**9
+    yield_by_length = Plot(
+        path=path + "Yield_By_Length." + figformat,
+        title="Yield by length")
+    ax = sns.regplot(
+        x='lengths',
+        y="cumyield_gb",
+        data=df,
+        x_ci=None,
+        fit_reg=False,
+        color=color,
+        scatter_kws={"s": 3})
+    ax.set(
+        xlabel='Read length',
+        ylabel='Cumulative yield for minimal length',
+        title=title or yield_by_length.title)
+    fig = ax.get_figure()
+    yield_by_length.fig = fig
+    fig.savefig(yield_by_length.path, format=figformat, dpi=100, bbox_inches="tight")
+    plt.close("all")
+    return yield_by_length
 
 
 def make_layout(maxval):
