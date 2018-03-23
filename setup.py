@@ -7,15 +7,12 @@ from os import path
 exec(open('nanoplotter/version.py').read())
 here = path.abspath(path.dirname(__file__))
 
-with open('README.md') as f:
-    long_description = f.read()
-
 
 setup(
     name='nanoplotter',
     version=__version__,
     description='Plotting functions of Oxford Nanopore sequencing data',
-    long_description=long_description,
+    long_description=open(path.join(here, "README.md")).read(),
     long_description_content_type="text/markdown",
     url='https://github.com/wdecoster/nanoplotter',
     author='Wouter De Coster',
