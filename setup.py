@@ -31,6 +31,7 @@ setup(
     keywords='nanopore sequencing plotting quality control',
     packages=find_packages() + ['scripts'],
     python_requires='>=3',
+    setup_requires=['setuptools>=38.6.0'],
     install_requires=['pandas',
                       'numpy',
                       'scipy',
