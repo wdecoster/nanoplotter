@@ -39,5 +39,5 @@ setup(
                       'seaborn>=0.8.1',
                       "pauvre",
                       "statsmodels>=0.8.0",
-                      'plotly>=2.5.1']
+                      'plotly>=2.5.1'],
     package_dir={'nanoplotter': 'nanoplotter'})
