@@ -51,9 +51,12 @@ class Plot(object):
         self.path = path
         self.title = title
         self.fig = None
+        self.html = None
 
     def encode(self):
-        if self.fig:
+        if self.html:
+            return self.html
+        elif self.fig:
             return self.encode2()
         else:
             return self.encode1()
@@ -696,23 +699,27 @@ def compare_cumulative_yields(df, figformat, path, title=None, palette=None):
     return [cum_yield_gb]
 
 
-def overlay_histogram(df):
+def overlay_histogram(df, path):
     """
     Use plotly to create an overlay of length histograms
     Return html code
     """
+    overlay_hist = Plot(
+        path=path + "NanoComp_OverlayHistogram.html",
+        title="Cumulative yield")
     data = [go.Histogram(x=df.loc[df.dataset == d, "lengths"],
                          opacity=0.75,
                          name=d)
             for d in df.dataset.unique()]
 
-    plot = plotly.offline.plot({"data": data,
-                                "layout": go.Layout(barmode='overlay')},
-                               output_type="div",
-                               show_link=False)
-    with open("NanoComp_OverlayHistogram.html", 'w') as html_out:
-        html_out.write(plot)
-    return plot
+    overlay_hist.html = plotly.offline.plot({"data": data,
+                                             "layout": go.Layout(barmode='overlay')},
+                                            output_type="div",
+                                            show_link=False)
+
+    with open(overlay_hist.path, 'w') as html_out:
+        html_out.write(overlay_hist.html)
+    return overlay_hist
 
 
 def run_tests():
