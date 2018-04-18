@@ -699,18 +699,21 @@ def compare_cumulative_yields(df, figformat, path, title=None, palette=None):
     return [cum_yield_gb]
 
 
-def overlay_histogram(df, path):
+def overlay_histogram(df, path, palette=None):
     """
     Use plotly to create an overlay of length histograms
     Return html code
     """
+    if palette is None:
+        palette = plotly.colors.DEFAULT_PLOTLY_COLORS
     overlay_hist = Plot(
         path=path + "NanoComp_OverlayHistogram.html",
         title="Histogram of read lengths")
     data = [go.Histogram(x=df.loc[df.dataset == d, "lengths"],
                          opacity=0.75,
-                         name=d)
-            for d in df.dataset.unique()]
+                         name=d,
+                         marker=dict(color=c))
+            for d, c in zip(df.dataset.unique(), palette)]
 
     overlay_hist.html = plotly.offline.plot({
         "data": data,
@@ -727,8 +730,9 @@ def overlay_histogram(df, path):
     data = [go.Histogram(x=df.loc[df.dataset == d, "lengths"],
                          opacity=0.75,
                          name=d,
-                         histnorm='probability')
-            for d in df.dataset.unique()]
+                         histnorm='probability',
+                         marker=dict(color=c))
+            for d, c in zip(df.dataset.unique(), palette)]
 
     overlay_hist_normalized.html = plotly.offline.plot(
         {"data": data,
