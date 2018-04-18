@@ -610,7 +610,7 @@ def violin_or_box_plot(df, y, figformat, path, y_name,
 
 def output_barplot(df, figformat, path, title=None, palette=None):
     """Create barplots based on number of reads and total sum of nucleotides sequenced."""
-    logging.info("Creating barplots for number of reads and total throughput.")
+    logging.info("Nanoplotter: Creating barplots for number of reads and total throughput.")
     read_count = Plot(
         path=path + "NanoComp_number_of_reads." + figformat,
         title="Comparing number of reads")
