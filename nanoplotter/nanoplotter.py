@@ -40,6 +40,8 @@ import matplotlib.pyplot as plt
 from matplotlib import colors as mcolors
 import seaborn as sns
 from pauvre.marginplot import margin_plot
+import plotly
+import plotly.graph_objs as go
 
 
 class Plot(object):
@@ -49,9 +51,12 @@ class Plot(object):
         self.path = path
         self.title = title
         self.fig = None
+        self.html = None
 
     def encode(self):
-        if self.fig:
+        if self.html:
+            return self.html
+        elif self.fig:
             return self.encode2()
         else:
             return self.encode1()
@@ -692,6 +697,53 @@ def compare_cumulative_yields(df, figformat, path, title=None, palette=None):
     fig.savefig(cum_yield_gb.path, format=figformat, dpi=100, bbox_inches="tight")
     plt.close("all")
     return [cum_yield_gb]
+
+
+def overlay_histogram(df, path, palette=None):
+    """
+    Use plotly to create an overlay of length histograms
+    Return html code
+    """
+    if palette is None:
+        palette = plotly.colors.DEFAULT_PLOTLY_COLORS
+    overlay_hist = Plot(
+        path=path + "NanoComp_OverlayHistogram.html",
+        title="Histogram of read lengths")
+    data = [go.Histogram(x=df.loc[df.dataset == d, "lengths"],
+                         opacity=0.75,
+                         name=d,
+                         marker=dict(color=c))
+            for d, c in zip(df.dataset.unique(), palette)]
+
+    overlay_hist.html = plotly.offline.plot({
+        "data": data,
+        "layout": go.Layout(barmode='overlay',
+                            title=overlay_hist.title)},
+        output_type="div",
+        show_link=False)
+    with open(overlay_hist.path, 'w') as html_out:
+        html_out.write(overlay_hist.html)
+
+    overlay_hist_normalized = Plot(
+        path=path + "NanoComp_OverlayHistogram_Normalized.html",
+        title="Normalized of histogram read lengths")
+    data = [go.Histogram(x=df.loc[df.dataset == d, "lengths"],
+                         opacity=0.75,
+                         name=d,
+                         histnorm='probability',
+                         marker=dict(color=c))
+            for d, c in zip(df.dataset.unique(), palette)]
+
+    overlay_hist_normalized.html = plotly.offline.plot(
+        {"data": data,
+         "layout": go.Layout(barmode='overlay',
+                             title=overlay_hist_normalized.title)},
+        output_type="div",
+        show_link=False)
+    with open(overlay_hist_normalized.path, 'w') as html_out:
+        html_out.write(overlay_hist_normalized.html)
+
+    return [overlay_hist, overlay_hist_normalized]
 
 
 def run_tests():
