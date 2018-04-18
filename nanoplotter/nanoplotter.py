@@ -40,6 +40,8 @@ import matplotlib.pyplot as plt
 from matplotlib import colors as mcolors
 import seaborn as sns
 from pauvre.marginplot import margin_plot
+import plotly
+import plotly.graph_objs as go
 
 
 class Plot(object):
@@ -692,6 +694,25 @@ def compare_cumulative_yields(df, figformat, path, title=None, palette=None):
     fig.savefig(cum_yield_gb.path, format=figformat, dpi=100, bbox_inches="tight")
     plt.close("all")
     return [cum_yield_gb]
+
+
+def overlay_histogram(df):
+    """
+    Use plotly to create an overlay of length histograms
+    Return html code
+    """
+    data = [go.Histogram(x=df.loc[df.dataset == d, "lengths"],
+                         opacity=0.75,
+                         name=d)
+            for d in df.dataset.unique()]
+
+    plot = plotly.offline.plot({"data": data,
+                                "layout": go.Layout(barmode='overlay')},
+                               output_type="div",
+                               show_link=False)
+    with open("NanoComp_OverlayHistogram.html", 'w') as html_out:
+        html_out.write(plot)
+    return plot
 
 
 def run_tests():
