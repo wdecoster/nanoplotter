@@ -703,9 +703,11 @@ def overlay_histogram(df, path, palette=None):
     """
     Use plotly to create an overlay of length histograms
     Return html code
+
+    Only has 10 colors, which get recycled up to 5 times.
     """
     if palette is None:
-        palette = plotly.colors.DEFAULT_PLOTLY_COLORS
+        palette = plotly.colors.DEFAULT_PLOTLY_COLORS * 5
     overlay_hist = Plot(
         path=path + "NanoComp_OverlayHistogram.html",
         title="Histogram of read lengths")
