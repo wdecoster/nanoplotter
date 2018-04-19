@@ -655,47 +655,35 @@ def output_barplot(df, figformat, path, title=None, palette=None):
     return read_count, throughput_bases
 
 
-def compare_cumulative_yields(df, figformat, path, title=None, palette=None):
+def compare_cumulative_yields(df, path, palette=None, title=None):
     if palette is None:
-        palette = sns.color_palette()
-    dfs = check_valid_time_and_sort(df, "start_time")
+        palette = plotly.colors.DEFAULT_PLOTLY_COLORS * 5
+    dfs = check_valid_time_and_sort(df, "start_time").set_index("start_time")
+
     logging.info("Nanoplotter: Creating cumulative yield plots using {} reads.".format(len(dfs)))
-
-    dfs["start_time"] = dfs["start_time"].astype('timedelta64[s]')  # ?! dtype float64
-    maxtime = dfs["start_time"].max()
-    if maxtime < 12 * 3600:
-        steps = 1
-    elif maxtime < 64 * 3600:
-        steps = 4
-    else:
-        steps = 8
-    ticks = [int(i) for i in range(0, 168, steps) if not i > (maxtime / 3600)]
-
     cum_yield_gb = Plot(
-        path=path + "NanoComp_CumulativeYieldPlot_Gigabases." + figformat,
+        path=path + "NanoComp_CumulativeYieldPlot_Gigabases.html",
         title="Cumulative yield")
-
-    fig, ax = plt.subplots()
-    for ds, col in zip(dfs["dataset"].unique(), palette):
-        sns.regplot(
-            x=dfs.loc[dfs["dataset"] == ds, 'start_time'],
-            y=dfs.loc[dfs["dataset"] == ds, "lengths"].cumsum() / 10**9,
-            x_ci=None,
-            fit_reg=False,
-            color=col,
-            scatter_kws={"s": 3},
-            label=ds,
-            ax=ax)
-    ax.set(
-        xticks=[i * 3600 for i in ticks],
-        xticklabels=ticks,
-        xlabel='Run time (hours)',
-        ylabel='Cumulative yield in gigabase',
-        title=title or cum_yield_gb.title)
-    ax.legend(loc="best")
-    cum_yield_gb.fig = fig
-    fig.savefig(cum_yield_gb.path, format=figformat, dpi=100, bbox_inches="tight")
-    plt.close("all")
+    data = []
+    for d, c in zip(df.dataset.unique(), palette):
+        s = dfs.loc[dfs.dataset == d, "lengths"].cumsum().resample('10T').max()
+        data.append(go.Scatter(x=s.index.total_seconds() / 3600,
+                               y=s,
+                               opacity=0.75,
+                               name=d,
+                               marker=dict(color=c))
+                    )
+    cum_yield_gb.html = plotly.offline.plot({
+        "data": data,
+        "layout": go.Layout(barmode='overlay',
+                            title=title or cum_yield_gb.title,
+                            xaxis=dict(title="Time (hours)"),
+                            yaxis=dict(title="Yield (gigabase)"),
+                            )},
+        output_type="div",
+        show_link=False)
+    with open(cum_yield_gb.path, 'w') as html_out:
+        html_out.write(cum_yield_gb.html)
     return [cum_yield_gb]
 
 
