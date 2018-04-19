@@ -666,7 +666,7 @@ def compare_cumulative_yields(df, path, palette=None, title=None):
         title="Cumulative yield")
     data = []
     for d, c in zip(df.dataset.unique(), palette):
-        s = dfs.loc[dfs.dataset == d, "lengths"].cumsum().resample('10T').max()
+        s = dfs.loc[dfs.dataset == d, "lengths"].cumsum().resample('10T').max() / 1e9
         data.append(go.Scatter(x=s.index.total_seconds() / 3600,
                                y=s,
                                opacity=0.75,
