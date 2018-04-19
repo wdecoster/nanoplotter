@@ -6,7 +6,7 @@ reads and alignments, but some of it's functions can also be used for other appl
 
 FUNCTIONS
 * Check if a specified color is a valid matplotlib color
-checkvalidColor(color)
+check_valid_color(color)
 * Check if a specified output format is valid
 checkvalidFormat(format)
 * Create a bivariate plot with dots, hexbins and/or kernel density estimates.
