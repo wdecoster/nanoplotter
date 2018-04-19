@@ -728,7 +728,7 @@ def overlay_histogram(df, path, palette=None):
 
     overlay_hist_normalized = Plot(
         path=path + "NanoComp_OverlayHistogram_Normalized.html",
-        title="Normalized of histogram read lengths")
+        title="Normalized histogram of read lengths")
     data = [go.Histogram(x=df.loc[df.dataset == d, "lengths"],
                          opacity=0.75,
                          name=d,
