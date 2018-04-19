@@ -744,7 +744,6 @@ def overlay_histogram(df, path, palette=None):
         show_link=False)
     with open(overlay_hist_normalized.path, 'w') as html_out:
         html_out.write(overlay_hist_normalized.html)
-
     return [overlay_hist, overlay_hist_normalized]
 
 
