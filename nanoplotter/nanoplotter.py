@@ -382,7 +382,7 @@ def cumulative_yield(dfs, path, figformat, title, color):
         scatter_kws={"s": 3})
     ax.set(
         xlabel='Run time (hours)',
-        ylabel='Number of reads per 10 minutes',
+        ylabel='Cumulative yield in number of reads',
         title=title or cum_yield_reads.title)
     fig = ax.get_figure()
     cum_yield_reads.fig = fig
