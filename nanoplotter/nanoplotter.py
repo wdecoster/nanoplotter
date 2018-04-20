@@ -6,7 +6,7 @@ reads and alignments, but some of it's functions can also be used for other appl
 
 FUNCTIONS
 * Check if a specified color is a valid matplotlib color
-checkvalidColor(color)
+check_valid_color(color)
 * Check if a specified output format is valid
 checkvalidFormat(format)
 * Create a bivariate plot with dots, hexbins and/or kernel density estimates.
@@ -273,7 +273,7 @@ def time_plots(df, path, title=None, color="#4CB391", figformat="png"):
     """Making plots of time vs read length, time vs quality and cumulative yield."""
     dfs = check_valid_time_and_sort(df, "start_time")
     logging.info("Nanoplotter: Creating timeplots using {} reads.".format(len(dfs)))
-    cumyields = cumulative_yield(dfs=dfs,
+    cumyields = cumulative_yield(dfs=dfs.set_index("start_time"),
                                  path=path,
                                  figformat=figformat,
                                  title=title,
@@ -349,32 +349,18 @@ def violin_plots_over_time(dfs, path, figformat, title):
 
 
 def cumulative_yield(dfs, path, figformat, title, color):
-    dfs["cumyield_gb"] = dfs["lengths"].cumsum() / 10**9
-    dfs_sparse = dfs.sample(min(4000, len(dfs.index)))
-    dfs_sparse["start_time"] = dfs_sparse["start_time"].astype('timedelta64[s]')  # ?! dtype float64
-    maxtime = dfs_sparse["start_time"].max()
-    if maxtime < 12 * 3600:
-        steps = 1
-    elif maxtime < 64 * 3600:
-        steps = 4
-    else:
-        steps = 8
-    ticks = [int(i) for i in range(0, 168, steps) if not i > (maxtime / 3600)]
-
     cum_yield_gb = Plot(
         path=path + "CumulativeYieldPlot_Gigabases." + figformat,
         title="Cumulative yield")
+    s = dfs.loc[:, "lengths"].cumsum().resample('10T').max() / 1e9
     ax = sns.regplot(
-        x='start_time',
-        y="cumyield_gb",
-        data=dfs_sparse,
+        x=s.index.total_seconds() / 3600,
+        y=s,
         x_ci=None,
         fit_reg=False,
         color=color,
         scatter_kws={"s": 3})
     ax.set(
-        xticks=[i * 3600 for i in ticks],
-        xticklabels=ticks,
         xlabel='Run time (hours)',
         ylabel='Cumulative yield in gigabase',
         title=title or cum_yield_gb.title)
@@ -386,17 +372,15 @@ def cumulative_yield(dfs, path, figformat, title, color):
     cum_yield_reads = Plot(
         path=path + "CumulativeYieldPlot_NumberOfReads." + figformat,
         title="Cumulative yield")
+    s = dfs.loc[:, "lengths"].resample('10T').count().cumsum()
     ax = sns.regplot(
-        x='start_time',
-        y="index",
-        data=dfs_sparse,
+        x=s.index.total_seconds() / 3600,
+        y=s,
         x_ci=None,
         fit_reg=False,
         color=color,
         scatter_kws={"s": 3})
     ax.set(
-        xticks=[i * 3600 for i in ticks],
-        xticklabels=ticks,
         xlabel='Run time (hours)',
         ylabel='Cumulative yield in number of reads',
         title=title or cum_yield_reads.title)
@@ -404,7 +388,28 @@ def cumulative_yield(dfs, path, figformat, title, color):
     cum_yield_reads.fig = fig
     fig.savefig(cum_yield_reads.path, format=figformat, dpi=100, bbox_inches="tight")
     plt.close("all")
-    return [cum_yield_gb, cum_yield_reads]
+
+    num_reads = Plot(
+        path=path + "NumberOfReads_Over_Time." + figformat,
+        title="Number of reads over time")
+    s = dfs.loc[:, "lengths"].resample('10T').count()
+    ax = sns.regplot(
+        x=s.index.total_seconds() / 3600,
+        y=s,
+        x_ci=None,
+        fit_reg=False,
+        color=color,
+        scatter_kws={"s": 3})
+    ax.set(
+        xlabel='Run time (hours)',
+        ylabel='Number of reads per 10 minutes',
+        title=title or num_reads.title)
+    fig = ax.get_figure()
+    num_reads.fig = fig
+    fig.savefig(num_reads.path, format=figformat, dpi=100, bbox_inches="tight")
+    plt.close("all")
+
+    return [cum_yield_gb, cum_yield_reads, num_reads]
 
 
 def length_plots(array, name, path, title=None, n50=None, color="#4CB391", figformat="png"):
@@ -655,47 +660,35 @@ def output_barplot(df, figformat, path, title=None, palette=None):
     return read_count, throughput_bases
 
 
-def compare_cumulative_yields(df, figformat, path, title=None, palette=None):
+def compare_cumulative_yields(df, path, palette=None, title=None):
     if palette is None:
-        palette = sns.color_palette()
-    dfs = check_valid_time_and_sort(df, "start_time")
+        palette = plotly.colors.DEFAULT_PLOTLY_COLORS * 5
+    dfs = check_valid_time_and_sort(df, "start_time").set_index("start_time")
+
     logging.info("Nanoplotter: Creating cumulative yield plots using {} reads.".format(len(dfs)))
-
-    dfs["start_time"] = dfs["start_time"].astype('timedelta64[s]')  # ?! dtype float64
-    maxtime = dfs["start_time"].max()
-    if maxtime < 12 * 3600:
-        steps = 1
-    elif maxtime < 64 * 3600:
-        steps = 4
-    else:
-        steps = 8
-    ticks = [int(i) for i in range(0, 168, steps) if not i > (maxtime / 3600)]
-
     cum_yield_gb = Plot(
-        path=path + "NanoComp_CumulativeYieldPlot_Gigabases." + figformat,
+        path=path + "NanoComp_CumulativeYieldPlot_Gigabases.html",
         title="Cumulative yield")
-
-    fig, ax = plt.subplots()
-    for ds, col in zip(dfs["dataset"].unique(), palette):
-        sns.regplot(
-            x=dfs.loc[dfs["dataset"] == ds, 'start_time'],
-            y=dfs.loc[dfs["dataset"] == ds, "lengths"].cumsum() / 10**9,
-            x_ci=None,
-            fit_reg=False,
-            color=col,
-            scatter_kws={"s": 3},
-            label=ds,
-            ax=ax)
-    ax.set(
-        xticks=[i * 3600 for i in ticks],
-        xticklabels=ticks,
-        xlabel='Run time (hours)',
-        ylabel='Cumulative yield in gigabase',
-        title=title or cum_yield_gb.title)
-    ax.legend(loc="best")
-    cum_yield_gb.fig = fig
-    fig.savefig(cum_yield_gb.path, format=figformat, dpi=100, bbox_inches="tight")
-    plt.close("all")
+    data = []
+    for d, c in zip(df.dataset.unique(), palette):
+        s = dfs.loc[dfs.dataset == d, "lengths"].cumsum().resample('10T').max() / 1e9
+        data.append(go.Scatter(x=s.index.total_seconds() / 3600,
+                               y=s,
+                               opacity=0.75,
+                               name=d,
+                               marker=dict(color=c))
+                    )
+    cum_yield_gb.html = plotly.offline.plot({
+        "data": data,
+        "layout": go.Layout(barmode='overlay',
+                            title=title or cum_yield_gb.title,
+                            xaxis=dict(title="Time (hours)"),
+                            yaxis=dict(title="Yield (gigabase)"),
+                            )},
+        output_type="div",
+        show_link=False)
+    with open(cum_yield_gb.path, 'w') as html_out:
+        html_out.write(cum_yield_gb.html)
     return [cum_yield_gb]
 
 
@@ -703,9 +696,11 @@ def overlay_histogram(df, path, palette=None):
     """
     Use plotly to create an overlay of length histograms
     Return html code
+
+    Only has 10 colors, which get recycled up to 5 times.
     """
     if palette is None:
-        palette = plotly.colors.DEFAULT_PLOTLY_COLORS
+        palette = plotly.colors.DEFAULT_PLOTLY_COLORS * 5
     overlay_hist = Plot(
         path=path + "NanoComp_OverlayHistogram.html",
         title="Histogram of read lengths")
@@ -726,7 +721,7 @@ def overlay_histogram(df, path, palette=None):
 
     overlay_hist_normalized = Plot(
         path=path + "NanoComp_OverlayHistogram_Normalized.html",
-        title="Normalized of histogram read lengths")
+        title="Normalized histogram of read lengths")
     data = [go.Histogram(x=df.loc[df.dataset == d, "lengths"],
                          opacity=0.75,
                          name=d,
@@ -742,7 +737,6 @@ def overlay_histogram(df, path, palette=None):
         show_link=False)
     with open(overlay_hist_normalized.path, 'w') as html_out:
         html_out.write(overlay_hist_normalized.html)
-
     return [overlay_hist, overlay_hist_normalized]
 
 
