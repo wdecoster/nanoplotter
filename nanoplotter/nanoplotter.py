@@ -273,7 +273,7 @@ def time_plots(df, path, title=None, color="#4CB391", figformat="png"):
     """Making plots of time vs read length, time vs quality and cumulative yield."""
     dfs = check_valid_time_and_sort(df, "start_time")
     logging.info("Nanoplotter: Creating timeplots using {} reads.".format(len(dfs)))
-    cumyields = cumulative_yield(dfs=dfs,
+    cumyields = cumulative_yield(dfs=dfs.set_index("start_time"),
                                  path=path,
                                  figformat=figformat,
                                  title=title,
@@ -349,32 +349,18 @@ def violin_plots_over_time(dfs, path, figformat, title):
 
 
 def cumulative_yield(dfs, path, figformat, title, color):
-    dfs["cumyield_gb"] = dfs["lengths"].cumsum() / 10**9
-    dfs_sparse = dfs.sample(min(4000, len(dfs.index)))
-    dfs_sparse["start_time"] = dfs_sparse["start_time"].astype('timedelta64[s]')  # ?! dtype float64
-    maxtime = dfs_sparse["start_time"].max()
-    if maxtime < 12 * 3600:
-        steps = 1
-    elif maxtime < 64 * 3600:
-        steps = 4
-    else:
-        steps = 8
-    ticks = [int(i) for i in range(0, 168, steps) if not i > (maxtime / 3600)]
-
     cum_yield_gb = Plot(
         path=path + "CumulativeYieldPlot_Gigabases." + figformat,
         title="Cumulative yield")
+    s = dfs.loc[:, "lengths"].cumsum().resample('10T').max() / 1e9
     ax = sns.regplot(
-        x='start_time',
-        y="cumyield_gb",
-        data=dfs_sparse,
+        x=s.index.total_seconds() / 3600,
+        y=s,
         x_ci=None,
         fit_reg=False,
         color=color,
         scatter_kws={"s": 3})
     ax.set(
-        xticks=[i * 3600 for i in ticks],
-        xticklabels=ticks,
         xlabel='Run time (hours)',
         ylabel='Cumulative yield in gigabase',
         title=title or cum_yield_gb.title)
@@ -386,19 +372,17 @@ def cumulative_yield(dfs, path, figformat, title, color):
     cum_yield_reads = Plot(
         path=path + "CumulativeYieldPlot_NumberOfReads." + figformat,
         title="Cumulative yield")
+    s = dfs.loc[:, "lengths"].resample('10T').count().cumsum()
     ax = sns.regplot(
-        x='start_time',
-        y="index",
-        data=dfs_sparse,
+        x=s.index.total_seconds() / 3600,
+        y=s,
         x_ci=None,
         fit_reg=False,
         color=color,
         scatter_kws={"s": 3})
     ax.set(
-        xticks=[i * 3600 for i in ticks],
-        xticklabels=ticks,
         xlabel='Run time (hours)',
-        ylabel='Cumulative yield in number of reads',
+        ylabel='Number of reads per 10 minutes',
         title=title or cum_yield_reads.title)
     fig = ax.get_figure()
     cum_yield_reads.fig = fig
