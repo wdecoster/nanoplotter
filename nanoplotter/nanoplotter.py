@@ -705,7 +705,7 @@ def overlay_histogram(df, path, palette=None):
         path=path + "NanoComp_OverlayHistogram.html",
         title="Histogram of read lengths")
     data = [go.Histogram(x=df.loc[df.dataset == d, "lengths"],
-                         opacity=0.75,
+                         opacity=0.4,
                          name=d,
                          marker=dict(color=c))
             for d, c in zip(df.dataset.unique(), palette)]
@@ -723,7 +723,7 @@ def overlay_histogram(df, path, palette=None):
         path=path + "NanoComp_OverlayHistogram_Normalized.html",
         title="Normalized histogram of read lengths")
     data = [go.Histogram(x=df.loc[df.dataset == d, "lengths"],
-                         opacity=0.75,
+                         opacity=0.4,
                          name=d,
                          histnorm='probability',
                          marker=dict(color=c))
