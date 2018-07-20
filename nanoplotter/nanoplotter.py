@@ -307,7 +307,7 @@ def violin_plots_over_time(dfs, path, figformat, title):
         xlabel='Interval (hours)',
         ylabel="Read length",
         title=title or time_length.title)
-    plt.xticks(rotation=30, ha='center')
+    plt.xticks(rotation=45, ha='center', fontsize=8)
     fig = ax.get_figure()
     time_length.fig = fig
     fig.savefig(
@@ -335,7 +335,7 @@ def violin_plots_over_time(dfs, path, figformat, title):
             xlabel='Interval (hours)',
             ylabel="Basecall quality",
             title=title or time_qual.title)
-        plt.xticks(rotation=30, ha='center')
+        plt.xticks(rotation=45, ha='center', fontsize=8)
         fig = ax.get_figure()
         time_qual.fig = fig
         fig.savefig(
@@ -365,7 +365,7 @@ def violin_plots_over_time(dfs, path, figformat, title):
             xlabel='Interval (hours)',
             ylabel="Sequencing speed (nucleotides/second)",
             title=title or time_duration.title)
-        plt.xticks(rotation=30, ha='center')
+        plt.xticks(rotation=45, ha='center', fontsize=8)
         fig = ax.get_figure()
         time_duration.fig = fig
         fig.savefig(
