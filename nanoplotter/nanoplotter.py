@@ -291,10 +291,10 @@ def violin_plots_over_time(dfs, path, figformat, title):
         path=path + "TimeLengthViolinPlot." + figformat,
         title="Violin plot of read lengths over time")
     sns.set_style("white")
-    labels = [str(i) + "-" + str(i + 6) for i in range(0, 168, 6) if not i > (maxtime / 3600)]
+    labels = [str(i) + "-" + str(i + 3) for i in range(0, 168, 3) if not i > (maxtime / 3600)]
     dfs['timebin'] = pd.cut(
         x=dfs["start_time"],
-        bins=ceil((maxtime / 3600) / 6),
+        bins=ceil((maxtime / 3600) / 3),
         labels=labels)
     ax = sns.violinplot(
         x="timebin",
