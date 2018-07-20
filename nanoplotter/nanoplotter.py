@@ -434,7 +434,7 @@ def length_plots(array, name, path, title=None, n50=None, color="#4CB391", figfo
             a=array,
             kde=False,
             hist=True,
-            bins=round(int(maxvalx) / h_type.binsize),
+            bins=min(round(int(maxvalx) / h_type.binsize), 5),
             color=color,
             hist_kws={"weights": h_type.weight})
         if n50:
