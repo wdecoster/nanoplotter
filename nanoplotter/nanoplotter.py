@@ -144,7 +144,7 @@ def scatter(x, y, names, path, plots, color="#4CB391", figformat="png",
             space=0,
             xlim=(minvalx, maxvalx),
             ylim=(minvaly, maxvaly),
-            size=10)
+            height=10)
         plot.set_axis_labels(names[0], names[1])
         if log:
             hex_plot.title = hex_plot.title + " after log transformation of read lengths"
@@ -172,7 +172,7 @@ def scatter(x, y, names, path, plots, color="#4CB391", figformat="png",
             xlim=(minvalx, maxvalx),
             ylim=(minvaly, maxvaly),
             space=0,
-            size=10,
+            height=10,
             joint_kws={"s": 1})
         plot.set_axis_labels(names[0], names[1])
         if log:
@@ -203,7 +203,7 @@ def scatter(x, y, names, path, plots, color="#4CB391", figformat="png",
             color=color,
             stat_func=stat,
             shade_lowest=False,
-            size=10)
+            height=10)
         plot.set_axis_labels(names[0], names[1])
         if log:
             kde_plot.title = kde_plot.title + " after log transformation of read lengths"
