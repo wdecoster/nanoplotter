@@ -113,8 +113,12 @@ def check_valid_format(figformat):
         return "png"
 
 
+def plot_settings(plot_settings):
+    sns.set(**plot_settings)
+
+
 def scatter(x, y, names, path, plots, color="#4CB391", figformat="png",
-            stat=None, log=False, minvalx=0, minvaly=0, title=None):
+            stat=None, log=False, minvalx=0, minvaly=0, title=None, plot_settings=None):
     """Create bivariate plots.
 
     Create four types of bivariate plots of x vs y, containing marginal summaries
@@ -125,7 +129,7 @@ def scatter(x, y, names, path, plots, color="#4CB391", figformat="png",
     """
     logging.info("Nanoplotter: Creating {} vs {} plots using statistics from {} reads.".format(
         names[0], names[1], x.size))
-    sns.set(style="ticks")
+    sns.set(style="ticks", **plot_settings)
     maxvalx = np.amax(x)
     maxvaly = np.amax(y)
 
@@ -158,7 +162,7 @@ def scatter(x, y, names, path, plots, color="#4CB391", figformat="png",
         plot.savefig(hex_plot.path, format=figformat, dpi=100, bbox_inches="tight")
         plots_made.append(hex_plot)
 
-    sns.set(style="darkgrid")
+    sns.set(style="darkgrid", **plot_settings)
     if plots["dot"]:
         dot_plot = Plot(
             path=path + "_dot." + figformat,
@@ -221,7 +225,7 @@ def scatter(x, y, names, path, plots, color="#4CB391", figformat="png",
         pauvre_plot = Plot(
             path=path + "_pauvre." + figformat,
             title="{} vs {} plot using pauvre-style @conchoecia".format(names[0], names[1]))
-        sns.set_style("white")
+        sns.set_style("white", **plot_settings)
         margin_plot(df=pd.DataFrame({"length": x, "meanQual": y}),
                     Y_AXES=False,
                     title=title or "Length vs Quality in Pauvre-style",
@@ -269,7 +273,7 @@ def check_valid_time_and_sort(df, timescol, days=5, warning=True):
             .reset_index()
 
 
-def time_plots(df, path, title=None, color="#4CB391", figformat="png"):
+def time_plots(df, path, title=None, color="#4CB391", figformat="png", plot_settings=None):
     """Making plots of time vs read length, time vs quality and cumulative yield."""
     dfs = check_valid_time_and_sort(df, "start_time")
     logging.info("Nanoplotter: Creating timeplots using {} reads.".format(len(dfs)))
@@ -281,16 +285,17 @@ def time_plots(df, path, title=None, color="#4CB391", figformat="png"):
     violins = violin_plots_over_time(dfs=dfs,
                                      path=path,
                                      figformat=figformat,
-                                     title=title)
+                                     title=title,
+                                     plot_settings=plot_settings)
     return cumyields + violins
 
 
-def violin_plots_over_time(dfs, path, figformat, title):
+def violin_plots_over_time(dfs, path, figformat, title, plot_settings=None):
     maxtime = dfs["start_time"].max().total_seconds()
     time_length = Plot(
         path=path + "TimeLengthViolinPlot." + figformat,
         title="Violin plot of read lengths over time")
-    sns.set_style("white")
+    sns.set(style="white", **plot_settings)
     labels = [str(i) + "-" + str(i + 3) for i in range(0, 168, 3) if not i > (maxtime / 3600)]
     dfs['timebin'] = pd.cut(
         x=dfs["start_time"],
@@ -323,7 +328,7 @@ def violin_plots_over_time(dfs, path, figformat, title):
         time_qual = Plot(
             path=path + "TimeQualityViolinPlot." + figformat,
             title="Violin plot of quality over time")
-        sns.set_style("white")
+        sns.set(style="white", **plot_settings)
         ax = sns.violinplot(
             x="timebin",
             y="quals",
