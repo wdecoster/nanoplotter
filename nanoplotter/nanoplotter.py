@@ -783,11 +783,13 @@ def run_tests():
         y=df["quals"],
         names=['Read lengths', 'Average read quality'],
         path="LengthvsQualityScatterPlot",
-        plots={'dot': 1, 'kde': 1, 'hex': 1, 'pauvre': 1})
+        plots={'dot': 1, 'kde': 1, 'hex': 1, 'pauvre': 1},
+        plot_settings=dict(font_scale=1))
     time_plots(
         df=df,
         path=".",
-        color="#4CB391")
+        color="#4CB391",
+        plot_settings=dict(font_scale=1))
     length_plots(
         array=df["lengths"],
         name="lengths",
