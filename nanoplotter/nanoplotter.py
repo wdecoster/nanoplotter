@@ -225,7 +225,7 @@ def scatter(x, y, names, path, plots, color="#4CB391", figformat="png",
         pauvre_plot = Plot(
             path=path + "_pauvre." + figformat,
             title="{} vs {} plot using pauvre-style @conchoecia".format(names[0], names[1]))
-        sns.set_style("white", **plot_settings)
+        sns.set(style="white", **plot_settings)
         margin_plot(df=pd.DataFrame({"length": x, "meanQual": y}),
                     Y_AXES=False,
                     title=title or "Length vs Quality in Pauvre-style",
