@@ -457,10 +457,10 @@ def length_plots(array, name, path, title=None, n50=None, color="#4CB391", figfo
     else:
         logging.info("Nanoplotter: Using {} reads maximum of {}bp.".format(array.size, maxvalx))
 
-    HistType = namedtuple('HistType', 'weight name binsize ylabel')
+    HistType = namedtuple('HistType', 'weight name ylabel')
     plots = []
-    for h_type in [HistType(None, "", 100, "Number of reads"),
-                   HistType(array, "Weighted ", 500, "Number of bases")]:
+    for h_type in [HistType(None, "", "Number of reads"),
+                   HistType(array, "Weighted ", "Number of bases")]:
         histogram = Plot(
             path=path + h_type.name.replace(" ", "_") + "Histogram" +
             name.replace(' ', '') + "." + figformat,
@@ -469,7 +469,7 @@ def length_plots(array, name, path, title=None, n50=None, color="#4CB391", figfo
             a=array,
             kde=False,
             hist=True,
-            bins=min(round(int(maxvalx) / h_type.binsize), 5),
+            bins=max(round(int(maxvalx) / 500), 10),
             color=color,
             hist_kws={"weights": h_type.weight})
         if n50:
