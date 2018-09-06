@@ -766,43 +766,40 @@ def overlay_histogram(df, path, palette=None):
     """
     if palette is None:
         palette = plotly.colors.DEFAULT_PLOTLY_COLORS * 5
+
     overlay_hist = Plot(
         path=path + "NanoComp_OverlayHistogram.html",
         title="Histogram of read lengths")
-    data = [go.Histogram(x=df.loc[df.dataset == d, "lengths"],
-                         opacity=0.4,
-                         name=d,
-                         marker=dict(color=c))
-            for d, c in zip(df.dataset.unique(), palette)]
-
-    overlay_hist.html = plotly.offline.plot({
-        "data": data,
-        "layout": go.Layout(barmode='overlay',
-                            title=overlay_hist.title)},
-        output_type="div",
-        show_link=False)
+    overlay_hist.html = plot_overlay_histogram(
+        df, palette, title=overlay_hist.title, histnorm="")
     with open(overlay_hist.path, 'w') as html_out:
         html_out.write(overlay_hist.html)
 
     overlay_hist_normalized = Plot(
         path=path + "NanoComp_OverlayHistogram_Normalized.html",
         title="Normalized histogram of read lengths")
+    overlay_hist_normalized.html = plot_overlay_histogram(
+        df, palette, title=overlay_hist_normalized.title, histnorm="probability")
+    with open(overlay_hist_normalized.path, 'w') as html_out:
+        html_out.write(overlay_hist_normalized.html)
+
+    return [overlay_hist, overlay_hist_normalized]
+
+
+def plot_overlay_histogram(df, palette, title, histnorm):
     data = [go.Histogram(x=df.loc[df.dataset == d, "lengths"],
                          opacity=0.4,
                          name=d,
-                         histnorm='probability',
+                         histnorm=histnorm,
                          marker=dict(color=c))
             for d, c in zip(df.dataset.unique(), palette)]
 
-    overlay_hist_normalized.html = plotly.offline.plot(
-        {"data": data,
-         "layout": go.Layout(barmode='overlay',
-                             title=overlay_hist_normalized.title)},
+    return plotly.offline.plot({
+        "data": data,
+        "layout": go.Layout(barmode='overlay',
+                            title=title)},
         output_type="div",
         show_link=False)
-    with open(overlay_hist_normalized.path, 'w') as html_out:
-        html_out.write(overlay_hist_normalized.html)
-    return [overlay_hist, overlay_hist_normalized]
 
 
 def run_tests():
