@@ -282,12 +282,17 @@ def time_plots(df, path, title=None, color="#4CB391", figformat="png", plot_sett
                                  figformat=figformat,
                                  title=title,
                                  color=color)
+    reads_pores_over_time = plot_over_time(dfs=dfs.set_index("start_time"),
+                                           path=path,
+                                           figformat=figformat,
+                                           title=title,
+                                           color=color)
     violins = violin_plots_over_time(dfs=dfs,
                                      path=path,
                                      figformat=figformat,
                                      title=title,
                                      plot_settings=plot_settings)
-    return cumyields + violins
+    return cumyields + reads_pores_over_time + violins
 
 
 def violin_plots_over_time(dfs, path, figformat, title, plot_settings=None):
@@ -383,6 +388,52 @@ def violin_plots_over_time(dfs, path, figformat, title, plot_settings=None):
     return plots
 
 
+def plot_over_time(dfs, path, figformat, title, color):
+    num_reads = Plot(
+        path=path + "NumberOfReads_Over_Time." + figformat,
+        title="Number of reads over time")
+    s = dfs.loc[:, "lengths"].resample('10T').count()
+    ax = sns.regplot(
+        x=s.index.total_seconds() / 3600,
+        y=s,
+        x_ci=None,
+        fit_reg=False,
+        color=color,
+        scatter_kws={"s": 3})
+    ax.set(
+        xlabel='Run time (hours)',
+        ylabel='Number of reads per 10 minutes',
+        title=title or num_reads.title)
+    fig = ax.get_figure()
+    num_reads.fig = fig
+    fig.savefig(num_reads.path, format=figformat, dpi=100, bbox_inches="tight")
+    plt.close("all")
+    plots = [num_reads]
+
+    if "channelIDs" in dfs:
+        pores_over_time = Plot(
+            path=path + "ActivePores_Over_Time." + figformat,
+            title="Number of active pores over time")
+        s = dfs.loc[:, "channelIDs"].resample('10T').nunique()
+        ax = sns.regplot(
+            x=s.index.total_seconds() / 3600,
+            y=s,
+            x_ci=None,
+            fit_reg=False,
+            color=color,
+            scatter_kws={"s": 3})
+        ax.set(
+            xlabel='Run time (hours)',
+            ylabel='Active pores per 10 minutes',
+            title=title or pores_over_time.title)
+        fig = ax.get_figure()
+        pores_over_time.fig = fig
+        fig.savefig(pores_over_time.path, format=figformat, dpi=100, bbox_inches="tight")
+        plt.close("all")
+        plots.append(pores_over_time)
+    return plots
+
+
 def cumulative_yield(dfs, path, figformat, title, color):
     cum_yield_gb = Plot(
         path=path + "CumulativeYieldPlot_Gigabases." + figformat,
@@ -423,28 +474,7 @@ def cumulative_yield(dfs, path, figformat, title, color):
     cum_yield_reads.fig = fig
     fig.savefig(cum_yield_reads.path, format=figformat, dpi=100, bbox_inches="tight")
     plt.close("all")
-
-    num_reads = Plot(
-        path=path + "NumberOfReads_Over_Time." + figformat,
-        title="Number of reads over time")
-    s = dfs.loc[:, "lengths"].resample('10T').count()
-    ax = sns.regplot(
-        x=s.index.total_seconds() / 3600,
-        y=s,
-        x_ci=None,
-        fit_reg=False,
-        color=color,
-        scatter_kws={"s": 3})
-    ax.set(
-        xlabel='Run time (hours)',
-        ylabel='Number of reads per 10 minutes',
-        title=title or num_reads.title)
-    fig = ax.get_figure()
-    num_reads.fig = fig
-    fig.savefig(num_reads.path, format=figformat, dpi=100, bbox_inches="tight")
-    plt.close("all")
-
-    return [cum_yield_gb, cum_yield_reads, num_reads]
+    return [cum_yield_gb, cum_yield_reads]
 
 
 def length_plots(array, name, path, title=None, n50=None, color="#4CB391", figformat="png"):
