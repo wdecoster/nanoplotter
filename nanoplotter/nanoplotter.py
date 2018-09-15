@@ -34,8 +34,8 @@ from math import ceil
 import io
 import urllib
 from collections import namedtuple
-import matplotlib
-matplotlib.use('Agg')
+import matplotlib as mpl
+mpl.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib import colors as mcolors
 import seaborn as sns
@@ -113,8 +113,9 @@ def check_valid_format(figformat):
         return "png"
 
 
-def plot_settings(plot_settings):
+def plot_settings(plot_settings, dpi):
     sns.set(**plot_settings)
+    mpl.rcParams['savefig.dpi'] = dpi
 
 
 def scatter(x, y, names, path, plots, color="#4CB391", figformat="png",
@@ -159,7 +160,7 @@ def scatter(x, y, names, path, plots, color="#4CB391", figformat="png",
         plt.subplots_adjust(top=0.90)
         plot.fig.suptitle(title or "{} vs {} plot".format(names[0], names[1]), fontsize=25)
         hex_plot.fig = plot
-        plot.savefig(hex_plot.path, format=figformat, dpi=100, bbox_inches="tight")
+        plot.savefig(hex_plot.path, format=figformat, bbox_inches="tight")
         plots_made.append(hex_plot)
 
     sns.set(style="darkgrid", **plot_settings)
@@ -188,7 +189,7 @@ def scatter(x, y, names, path, plots, color="#4CB391", figformat="png",
         plt.subplots_adjust(top=0.90)
         plot.fig.suptitle(title or "{} vs {} plot".format(names[0], names[1]), fontsize=25)
         dot_plot.fig = plot
-        plot.savefig(dot_plot.path, format=figformat, dpi=100, bbox_inches="tight")
+        plot.savefig(dot_plot.path, format=figformat, bbox_inches="tight")
         plots_made.append(dot_plot)
 
     if plots["kde"]:
@@ -218,7 +219,7 @@ def scatter(x, y, names, path, plots, color="#4CB391", figformat="png",
         plt.subplots_adjust(top=0.90)
         plot.fig.suptitle(title or "{} vs {} plot".format(names[0], names[1]), fontsize=25)
         kde_plot.fig = plot
-        plot.savefig(kde_plot.path, format=figformat, dpi=100, bbox_inches="tight")
+        plot.savefig(kde_plot.path, format=figformat, bbox_inches="tight")
         plots_made.append(kde_plot)
 
     if plots["pauvre"] and names == ['Read lengths', 'Average read quality']:
@@ -323,7 +324,7 @@ def violin_plots_over_time(dfs, path, figformat, title, plot_settings=None):
     fig.savefig(
         fname=time_length.path,
         format=figformat,
-        dpi=100,
+
         bbox_inches='tight')
     plt.close("all")
 
@@ -351,7 +352,6 @@ def violin_plots_over_time(dfs, path, figformat, title, plot_settings=None):
         fig.savefig(
             fname=time_qual.path,
             format=figformat,
-            dpi=100,
             bbox_inches='tight')
         plots.append(time_qual)
         plt.close("all")
@@ -381,7 +381,6 @@ def violin_plots_over_time(dfs, path, figformat, title, plot_settings=None):
         fig.savefig(
             fname=time_duration.path,
             format=figformat,
-            dpi=100,
             bbox_inches='tight')
         plots.append(time_duration)
         plt.close("all")
@@ -406,7 +405,7 @@ def plot_over_time(dfs, path, figformat, title, color):
         title=title or num_reads.title)
     fig = ax.get_figure()
     num_reads.fig = fig
-    fig.savefig(num_reads.path, format=figformat, dpi=100, bbox_inches="tight")
+    fig.savefig(num_reads.path, format=figformat, bbox_inches="tight")
     plt.close("all")
     plots = [num_reads]
 
@@ -428,7 +427,7 @@ def plot_over_time(dfs, path, figformat, title, color):
             title=title or pores_over_time.title)
         fig = ax.get_figure()
         pores_over_time.fig = fig
-        fig.savefig(pores_over_time.path, format=figformat, dpi=100, bbox_inches="tight")
+        fig.savefig(pores_over_time.path, format=figformat, bbox_inches="tight")
         plt.close("all")
         plots.append(pores_over_time)
     return plots
@@ -452,7 +451,7 @@ def cumulative_yield(dfs, path, figformat, title, color):
         title=title or cum_yield_gb.title)
     fig = ax.get_figure()
     cum_yield_gb.fig = fig
-    fig.savefig(cum_yield_gb.path, format=figformat, dpi=100, bbox_inches="tight")
+    fig.savefig(cum_yield_gb.path, format=figformat, bbox_inches="tight")
     plt.close("all")
 
     cum_yield_reads = Plot(
@@ -472,7 +471,7 @@ def cumulative_yield(dfs, path, figformat, title, color):
         title=title or cum_yield_reads.title)
     fig = ax.get_figure()
     cum_yield_reads.fig = fig
-    fig.savefig(cum_yield_reads.path, format=figformat, dpi=100, bbox_inches="tight")
+    fig.savefig(cum_yield_reads.path, format=figformat, bbox_inches="tight")
     plt.close("all")
     return [cum_yield_gb, cum_yield_reads]
 
@@ -512,7 +511,7 @@ def length_plots(array, name, path, title=None, n50=None, color="#4CB391", figfo
         plt.ticklabel_format(style='plain', axis='y')
         fig = ax.get_figure()
         histogram.fig = fig
-        fig.savefig(histogram.path, format=figformat, dpi=100, bbox_inches="tight")
+        fig.savefig(histogram.path, format=figformat, bbox_inches="tight")
         plt.close("all")
 
         log_histogram = Plot(
@@ -539,7 +538,7 @@ def length_plots(array, name, path, title=None, n50=None, color="#4CB391", figfo
         plt.ticklabel_format(style='plain', axis='y')
         fig = ax.get_figure()
         log_histogram.fig = fig
-        fig.savefig(log_histogram.path, format=figformat, dpi=100, bbox_inches="tight")
+        fig.savefig(log_histogram.path, format=figformat, bbox_inches="tight")
         plt.close("all")
         plots.extend([histogram, log_histogram])
     plots.append(yield_by_minimal_length_plot(array, name, path, title=None,
@@ -568,7 +567,7 @@ def yield_by_minimal_length_plot(array, name, path,
         title=title or yield_by_length.title)
     fig = ax.get_figure()
     yield_by_length.fig = fig
-    fig.savefig(yield_by_length.path, format=figformat, dpi=100, bbox_inches="tight")
+    fig.savefig(yield_by_length.path, format=figformat, bbox_inches="tight")
     plt.close("all")
     return yield_by_length
 
@@ -625,7 +624,7 @@ def spatial_heatmap(array, path, title=None, color="Greens", figformat="png"):
     ax.set_title(title or activity_map.title)
     fig = ax.get_figure()
     activity_map.fig = fig
-    fig.savefig(activity_map.path, format=figformat, dpi=100)
+    fig.savefig(activity_map.path, format=figformat)
     plt.close("all")
     return [activity_map]
 
@@ -672,7 +671,6 @@ def violin_or_box_plot(df, y, figformat, path, y_name,
     fig.savefig(
         fname=violin_comp.path,
         format=figformat,
-        dpi=100,
         bbox_inches='tight')
     plt.close("all")
     return [violin_comp]
@@ -697,7 +695,6 @@ def output_barplot(df, figformat, path, title=None, palette=None):
     fig.savefig(
         fname=read_count.path,
         format=figformat,
-        dpi=100,
         bbox_inches='tight')
     plt.close("all")
 
@@ -719,7 +716,6 @@ def output_barplot(df, figformat, path, title=None, palette=None):
     fig.savefig(
         fname=throughput_bases.path,
         format=figformat,
-        dpi=100,
         bbox_inches='tight')
     plt.close("all")
     return read_count, throughput_bases
