@@ -794,10 +794,10 @@ def plot_overlay_histogram(df, palette, title, histnorm):
                          marker=dict(color=c))
             for d, c in zip(df.dataset.unique(), palette)]
 
-    return plotly.offline.plot({
-        "data": data,
-        "layout": go.Layout(barmode='overlay',
-                            title=title)},
+    return plotly.offline.plot(
+        {"data": data,
+         "layout": go.Layout(barmode='overlay',
+                             title=title)},
         output_type="div",
         show_link=False)
 
