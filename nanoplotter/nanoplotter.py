@@ -783,7 +783,23 @@ def overlay_histogram(df, path, palette=None):
     with open(overlay_hist_normalized.path, 'w') as html_out:
         html_out.write(overlay_hist_normalized.html)
 
-    return [overlay_hist, overlay_hist_normalized]
+    overlay_log_hist = Plot(
+        path=path + "NanoComp_OverlayLogHistogram.html",
+        title="Histogram of log transformed read lengths")
+    overlay_log_hist.html = plot_overlay_log_histogram(
+        df, palette, title=overlay_log_hist.title, histnorm="")
+    with open(overlay_log_hist.path, 'w') as html_out:
+        html_out.write(overlay_log_hist.html)
+
+    overlay_log_hist_normalized = Plot(
+        path=path + "NanoComp_OverlayLogHistogram_Normalized.html",
+        title="Normalized histogram of log transformed read lengths")
+    overlay_log_hist_normalized.html = plot_overlay_log_histogram(
+        df, palette, title=overlay_log_hist_normalized.title, histnorm="probability")
+    with open(overlay_log_hist_normalized.path, 'w') as html_out:
+        html_out.write(overlay_log_hist_normalized.html)
+
+    return [overlay_hist, overlay_hist_normalized, overlay_log_hist, overlay_log_hist_normalized]
 
 
 def plot_overlay_histogram(df, palette, title, histnorm):
@@ -798,6 +814,26 @@ def plot_overlay_histogram(df, palette, title, histnorm):
         {"data": data,
          "layout": go.Layout(barmode='overlay',
                              title=title)},
+        output_type="div",
+        show_link=False)
+
+
+def plot_overlay_log_histogram(df, palette, title, histnorm):
+    data = [go.Histogram(x=np.log10(df.loc[df.dataset == d, "lengths"]),
+                         opacity=0.4,
+                         name=d,
+                         histnorm=histnorm,
+                         marker=dict(color=c))
+            for d, c in zip(df.dataset.unique(), palette)]
+    xtickvals = [10**i for i in range(10) if not 10**i > 10 * np.amax(df["lengths"])]
+    return plotly.offline.plot(
+        {"data": data,
+         "layout": go.Layout(barmode='overlay',
+                             title=title,
+                             xaxis=dict(tickvals=np.log10(xtickvals),
+                                        ticktext=xtickvals)
+                             )
+         },
         output_type="div",
         show_link=False)
 
