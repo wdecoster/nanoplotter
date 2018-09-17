@@ -274,7 +274,8 @@ def check_valid_time_and_sort(df, timescol, days=5, warning=True):
             .reset_index()
 
 
-def time_plots(df, path, title=None, color="#4CB391", figformat="png", plot_settings=None):
+def time_plots(df, path, title=None, color="#4CB391", figformat="png",
+               log_length=False, plot_settings=None):
     """Making plots of time vs read length, time vs quality and cumulative yield."""
     dfs = check_valid_time_and_sort(df, "start_time")
     logging.info("Nanoplotter: Creating timeplots using {} reads.".format(len(dfs)))
@@ -292,24 +293,31 @@ def time_plots(df, path, title=None, color="#4CB391", figformat="png", plot_sett
                                      path=path,
                                      figformat=figformat,
                                      title=title,
+                                     log_length=log_length,
                                      plot_settings=plot_settings)
     return cumyields + reads_pores_over_time + violins
 
 
-def violin_plots_over_time(dfs, path, figformat, title, plot_settings=None):
+def violin_plots_over_time(dfs, path, figformat, title,
+                           log_length=False, plot_settings=None):
     maxtime = dfs["start_time"].max().total_seconds()
     time_length = Plot(
         path=path + "TimeLengthViolinPlot." + figformat,
         title="Violin plot of read lengths over time")
     sns.set(style="white", **plot_settings)
     labels = [str(i) + "-" + str(i + 3) for i in range(0, 168, 3) if not i > (maxtime / 3600)]
+    if log_length:
+        length_column = "log_lengths"
+    else:
+        length_column = "lengths"
+
     dfs['timebin'] = pd.cut(
         x=dfs["start_time"],
         bins=ceil((maxtime / 3600) / 3),
         labels=labels)
     ax = sns.violinplot(
         x="timebin",
-        y="lengths",
+        y=length_column,
         data=dfs,
         inner=None,
         cut=0,
@@ -318,6 +326,11 @@ def violin_plots_over_time(dfs, path, figformat, title, plot_settings=None):
         xlabel='Interval (hours)',
         ylabel="Read length",
         title=title or time_length.title)
+    if log_length:
+        ticks = [10**i for i in range(10) if not 10**i > 10 * np.amax(dfs["lengths"])]
+        ax.set(
+            yticks=np.log10(ticks),
+            yticklabels=ticks)
     plt.xticks(rotation=45, ha='center', fontsize=8)
     fig = ax.get_figure()
     time_length.fig = fig
