@@ -222,7 +222,7 @@ def scatter(x, y, names, path, plots, color="#4CB391", figformat="png",
         plot.savefig(kde_plot.path, format=figformat, bbox_inches="tight")
         plots_made.append(kde_plot)
 
-    if plots["pauvre"] and names == ['Read lengths', 'Average read quality']:
+    if plots["pauvre"] and names == ['Read lengths', 'Average read quality'] and log is False:
         pauvre_plot = Plot(
             path=path + "_pauvre." + figformat,
             title="{} vs {} plot using pauvre-style @conchoecia".format(names[0], names[1]))
@@ -242,8 +242,6 @@ def scatter(x, y, names, path, plots, color="#4CB391", figformat="png",
                     dpi=600,
                     TRANSPARENT=True,
                     QUIET=True)
-        if log:
-            pauvre_plot.title = pauvre_plot.title + " after log transformation of read lengths"
         plots_made.append(pauvre_plot)
     plt.close("all")
     return plots_made
