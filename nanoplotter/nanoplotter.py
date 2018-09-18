@@ -553,7 +553,7 @@ def length_plots(array, name, path, title=None, n50=None, color="#4CB391", figfo
         plt.close("all")
         plots.extend([histogram, log_histogram])
     plots.append(yield_by_minimal_length_plot(array, name, path, title=None,
-                                              n50=None, color="#4CB391", figformat="png"))
+                                              n50=None, color="#4CB391", figformat=figformat))
     return plots
 
 
