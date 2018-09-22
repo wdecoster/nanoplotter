@@ -558,13 +558,17 @@ def length_plots(array, name, path, title=None, n50=None, color="#4CB391", figfo
         fig.savefig(log_histogram.path, format=figformat, bbox_inches="tight")
         plt.close("all")
         plots.extend([histogram, log_histogram])
-    plots.append(yield_by_minimal_length_plot(array, name, path, title=None,
-                                              n50=None, color="#4CB391", figformat=figformat))
+    plots.append(yield_by_minimal_length_plot(array=array,
+                                              name=name,
+                                              path=path,
+                                              title=title,
+                                              color=color,
+                                              figformat=figformat))
     return plots
 
 
 def yield_by_minimal_length_plot(array, name, path,
-                                 title=None, n50=None, color="#4CB391", figformat="png"):
+                                 title=None, color="#4CB391", figformat="png"):
     df = pd.DataFrame(data={"lengths": np.sort(array)[::-1]})
     df["cumyield_gb"] = df["lengths"].cumsum() / 10**9
     yield_by_length = Plot(
