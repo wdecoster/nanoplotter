@@ -511,7 +511,10 @@ def length_plots(array, name, path, title=None, n50=None, color="#4CB391", figfo
             hist=True,
             bins=max(round(int(maxvalx) / 500), 10),
             color=color,
-            hist_kws={"weights": h_type.weight, "alpha": 0.8})
+            hist_kws=dict(weights=h_type.weight,
+                          edgecolor=color,
+                          linewidth=0.2,
+                          alpha=0.8))
         if n50:
             plt.axvline(n50)
             plt.annotate('N50', xy=(n50, np.amax([h.get_height() for h in ax.patches])), size=8)
@@ -534,7 +537,10 @@ def length_plots(array, name, path, title=None, n50=None, color="#4CB391", figfo
             kde=False,
             hist=True,
             color=color,
-            hist_kws={"weights": h_type.weight, "alpha": 0.8})
+            hist_kws=dict(weights=h_type.weight,
+                          edgecolor=color,
+                          linewidth=0.2,
+                          alpha=0.8))
         ticks = [10**i for i in range(10) if not 10**i > 10 * maxvalx]
         ax.set(
             xticks=np.log10(ticks),
