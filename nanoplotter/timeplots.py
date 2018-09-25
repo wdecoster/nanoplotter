@@ -210,7 +210,7 @@ def cumulative_yield(dfs, path, figformat, title, color):
     cum_yield_gb = Plot(
         path=path + "CumulativeYieldPlot_Gigabases." + figformat,
         title="Cumulative yield")
-    s = dfs.loc[:, "lengths"].cumsum().resample('10T').max() / 1e9
+    s = dfs.loc[:, "lengths"].cumsum().resample('1T').max() / 1e9
     ax = sns.regplot(
         x=s.index.total_seconds() / 3600,
         y=s,
