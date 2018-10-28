@@ -75,10 +75,16 @@ def violin_plots_over_time(dfs, path, figformat, title,
         x=dfs["start_time"],
         bins=ceil((maxtime / 3600) / 3),
         labels=labels)
+
+    if "length_filter" in dfs:  # produced by NanoPlot filtering of too long reads
+        temp_dfs = dfs[dfs["length_filter"]]
+    else:
+        temp_dfs = dfs
+
     ax = sns.violinplot(
         x="timebin",
         y=length_column,
-        data=dfs,
+        data=temp_dfs,
         inner=None,
         cut=0,
         linewidth=0)
