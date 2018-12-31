@@ -125,7 +125,11 @@ def compare_cumulative_yields(df, path, palette=None, title=None):
                             xaxis=dict(title="Time (hours)"),
                             yaxis=dict(title="Yield (gigabase)"),
                             )})
-    pio.write_image(fig, cum_yield_gb.path.replace('html', 'png'))
+    try:
+        pio.write_image(fig, cum_yield_gb.path.replace('html', 'png'))
+    except ValueError:
+        logging.info("Nanoplotter: orca not found, not creating static image of dynamic html.\n"
+                     "See https://github.com/plotly/orca")
     return [cum_yield_gb]
 
 
@@ -145,7 +149,11 @@ def overlay_histogram(df, path, palette=None):
     overlay_hist.html, fig = plot_overlay_histogram(
         df, palette, title=overlay_hist.title, histnorm="")
     overlay_hist.save()
-    pio.write_image(fig, overlay_hist.path.replace('html', 'png'))
+    try:
+        pio.write_image(fig, overlay_hist.path.replace('html', 'png'))
+    except ValueError:
+        logging.info("Nanoplotter: orca not found, not creating static image of dynamic html.\n"
+                     "See https://github.com/plotly/orca")
 
     overlay_hist_normalized = Plot(
         path=path + "NanoComp_OverlayHistogram_Normalized.html",
@@ -153,7 +161,10 @@ def overlay_histogram(df, path, palette=None):
     overlay_hist_normalized.html, fig = plot_overlay_histogram(
         df, palette, title=overlay_hist_normalized.title, histnorm="probability")
     overlay_hist_normalized.save()
-    pio.write_image(fig, overlay_hist_normalized.path.replace('html', 'png'))
+    try:
+        pio.write_image(fig, overlay_hist_normalized.path.replace('html', 'png'))
+    except ValueError:
+        pass
 
     overlay_log_hist = Plot(
         path=path + "NanoComp_OverlayLogHistogram.html",
@@ -161,7 +172,10 @@ def overlay_histogram(df, path, palette=None):
     overlay_log_hist.html, fig = plot_overlay_log_histogram(
         df, palette, title=overlay_log_hist.title, histnorm="")
     overlay_log_hist.save()
-    pio.write_image(fig, overlay_log_hist.path.replace('html', 'png'))
+    try:
+        pio.write_image(fig, overlay_log_hist.path.replace('html', 'png'))
+    except ValueError:
+        pass
 
     overlay_log_hist_normalized = Plot(
         path=path + "NanoComp_OverlayLogHistogram_Normalized.html",
@@ -169,7 +183,10 @@ def overlay_histogram(df, path, palette=None):
     overlay_log_hist_normalized.html, fig = plot_overlay_log_histogram(
         df, palette, title=overlay_log_hist_normalized.title, histnorm="probability")
     overlay_log_hist_normalized.save()
-    pio.write_image(fig, overlay_log_hist_normalized.path.replace('html', 'png'))
+    try:
+        pio.write_image(fig, overlay_log_hist_normalized.path.replace('html', 'png'))
+    except ValueError:
+        pass
 
     return [overlay_hist, overlay_hist_normalized, overlay_log_hist, overlay_log_hist_normalized]
 
