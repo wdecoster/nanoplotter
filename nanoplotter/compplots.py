@@ -45,12 +45,8 @@ def violin_or_box_plot(df, y, figformat, path, y_name,
     ax.set(title=title or violin_comp.title,
            ylabel=y_name)
     plt.xticks(rotation=30, ha='center')
-    fig = ax.get_figure()
-    violin_comp.fig = fig
-    fig.savefig(
-        fname=violin_comp.path,
-        format=figformat,
-        bbox_inches='tight')
+    violin_comp.fig = ax.get_figure()
+    violin_comp.save(format=figformat)
     plt.close("all")
     return [violin_comp]
 
@@ -69,12 +65,8 @@ def output_barplot(df, figformat, path, title=None, palette=None):
         ylabel='Number of reads',
         title=title or read_count.title)
     plt.xticks(rotation=30, ha='center')
-    fig = ax.get_figure()
-    read_count.fig = fig
-    fig.savefig(
-        fname=read_count.path,
-        format=figformat,
-        bbox_inches='tight')
+    read_count.fig = ax.get_figure()
+    read_count.save(format=figformat)
     plt.close("all")
 
     throughput_bases = Plot(
@@ -90,12 +82,8 @@ def output_barplot(df, figformat, path, title=None, palette=None):
         ylabel='Total gigabase sequenced',
         title=title or throughput_bases.title)
     plt.xticks(rotation=30, ha='center')
-    fig = ax.get_figure()
-    throughput_bases.fig = fig
-    fig.savefig(
-        fname=throughput_bases.path,
-        format=figformat,
-        bbox_inches='tight')
+    throughput_bases.fig = ax.get_figure()
+    throughput_bases.save(format=figformat)
     plt.close("all")
     return read_count, throughput_bases
 
@@ -147,32 +135,28 @@ def overlay_histogram(df, path, palette=None):
         title="Histogram of read lengths")
     overlay_hist.html = plot_overlay_histogram(
         df, palette, title=overlay_hist.title, histnorm="")
-    with open(overlay_hist.path, 'w') as html_out:
-        html_out.write(overlay_hist.html)
+    overlay_hist.save()
 
     overlay_hist_normalized = Plot(
         path=path + "NanoComp_OverlayHistogram_Normalized.html",
         title="Normalized histogram of read lengths")
     overlay_hist_normalized.html = plot_overlay_histogram(
         df, palette, title=overlay_hist_normalized.title, histnorm="probability")
-    with open(overlay_hist_normalized.path, 'w') as html_out:
-        html_out.write(overlay_hist_normalized.html)
+    overlay_hist_normalized.save()
 
     overlay_log_hist = Plot(
         path=path + "NanoComp_OverlayLogHistogram.html",
         title="Histogram of log transformed read lengths")
     overlay_log_hist.html = plot_overlay_log_histogram(
         df, palette, title=overlay_log_hist.title, histnorm="")
-    with open(overlay_log_hist.path, 'w') as html_out:
-        html_out.write(overlay_log_hist.html)
+    overlay_log_hist.save()
 
     overlay_log_hist_normalized = Plot(
         path=path + "NanoComp_OverlayLogHistogram_Normalized.html",
         title="Normalized histogram of log transformed read lengths")
     overlay_log_hist_normalized.html = plot_overlay_log_histogram(
         df, palette, title=overlay_log_hist_normalized.title, histnorm="probability")
-    with open(overlay_log_hist_normalized.path, 'w') as html_out:
-        html_out.write(overlay_log_hist_normalized.html)
+    overlay_log_hist_normalized.save()
 
     return [overlay_hist, overlay_hist_normalized, overlay_log_hist, overlay_log_hist_normalized]
 
