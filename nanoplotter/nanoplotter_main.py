@@ -117,7 +117,7 @@ def scatter(x, y, names, path, plots, color="#4CB391", figformat="png",
         plt.subplots_adjust(top=0.90)
         plot.fig.suptitle(title or "{} vs {} plot".format(names[0], names[1]), fontsize=25)
         hex_plot.fig = plot
-        plot.savefig(hex_plot.path, format=figformat, bbox_inches="tight")
+        hex_plot.save(format=figformat)
         plots_made.append(hex_plot)
 
     sns.set(style="darkgrid", **plot_settings)
@@ -146,7 +146,7 @@ def scatter(x, y, names, path, plots, color="#4CB391", figformat="png",
         plt.subplots_adjust(top=0.90)
         plot.fig.suptitle(title or "{} vs {} plot".format(names[0], names[1]), fontsize=25)
         dot_plot.fig = plot
-        plot.savefig(dot_plot.path, format=figformat, bbox_inches="tight")
+        dot_plot.save(format=figformat)
         plots_made.append(dot_plot)
 
     if plots["kde"]:
@@ -176,7 +176,7 @@ def scatter(x, y, names, path, plots, color="#4CB391", figformat="png",
         plt.subplots_adjust(top=0.90)
         plot.fig.suptitle(title or "{} vs {} plot".format(names[0], names[1]), fontsize=25)
         kde_plot.fig = plot
-        plot.savefig(kde_plot.path, format=figformat, bbox_inches="tight")
+        kde_plot.save(format=figformat)
         plots_made.append(kde_plot)
 
     if plots["pauvre"] and names == ['Read lengths', 'Average read quality'] and log is False:
@@ -240,9 +240,8 @@ def length_plots(array, name, path, title=None, n50=None, color="#4CB391", figfo
             ylabel=h_type.ylabel,
             title=title or histogram.title)
         plt.ticklabel_format(style='plain', axis='y')
-        fig = ax.get_figure()
-        histogram.fig = fig
-        fig.savefig(histogram.path, format=figformat, bbox_inches="tight")
+        histogram.fig = ax.get_figure()
+        histogram.save(format=figformat)
         plt.close("all")
 
         log_histogram = Plot(
@@ -270,9 +269,8 @@ def length_plots(array, name, path, title=None, n50=None, color="#4CB391", figfo
             plt.annotate('N50', xy=(np.log10(n50), np.amax(
                 [h.get_height() for h in ax.patches])), size=8)
         plt.ticklabel_format(style='plain', axis='y')
-        fig = ax.get_figure()
-        log_histogram.fig = fig
-        fig.savefig(log_histogram.path, format=figformat, bbox_inches="tight")
+        log_histogram.fig = ax.get_figure()
+        log_histogram.save(format=figformat)
         plt.close("all")
         plots.extend([histogram, log_histogram])
     plots.append(yield_by_minimal_length_plot(array=array,
@@ -303,9 +301,8 @@ def yield_by_minimal_length_plot(array, name, path,
         xlabel='Read length',
         ylabel='Cumulative yield for minimal length',
         title=title or yield_by_length.title)
-    fig = ax.get_figure()
-    yield_by_length.fig = fig
-    fig.savefig(yield_by_length.path, format=figformat, bbox_inches="tight")
+    yield_by_length.fig = ax.get_figure()
+    yield_by_length.save(format=figformat)
     plt.close("all")
     return yield_by_length
 
