@@ -6,6 +6,7 @@ import seaborn as sns
 import numpy as np
 import plotly
 import plotly.graph_objs as go
+import plotly.io as pio
 
 
 def violin_or_box_plot(df, y, figformat, path, y_name,
@@ -116,13 +117,22 @@ def compare_cumulative_yields(df, path, palette=None, title=None):
         output_type="div",
         show_link=False)
     cum_yield_gb.save()
+
+    fig = go.Figure({
+        "data": data,
+        "layout": go.Layout(barmode='overlay',
+                            title=title or cum_yield_gb.title,
+                            xaxis=dict(title="Time (hours)"),
+                            yaxis=dict(title="Yield (gigabase)"),
+                            )})
+    pio.write_image(fig, cum_yield_gb.path.replace('html', 'png'))
     return [cum_yield_gb]
 
 
 def overlay_histogram(df, path, palette=None):
     """
     Use plotly to create an overlay of length histograms
-    Return html code
+    Return html code, but also save as png
 
     Only has 10 colors, which get recycled up to 5 times.
     """
@@ -132,30 +142,34 @@ def overlay_histogram(df, path, palette=None):
     overlay_hist = Plot(
         path=path + "NanoComp_OverlayHistogram.html",
         title="Histogram of read lengths")
-    overlay_hist.html = plot_overlay_histogram(
+    overlay_hist.html, fig = plot_overlay_histogram(
         df, palette, title=overlay_hist.title, histnorm="")
     overlay_hist.save()
+    pio.write_image(fig, overlay_hist.path.replace('html', 'png'))
 
     overlay_hist_normalized = Plot(
         path=path + "NanoComp_OverlayHistogram_Normalized.html",
         title="Normalized histogram of read lengths")
-    overlay_hist_normalized.html = plot_overlay_histogram(
+    overlay_hist_normalized.html, fig = plot_overlay_histogram(
         df, palette, title=overlay_hist_normalized.title, histnorm="probability")
     overlay_hist_normalized.save()
+    pio.write_image(fig, overlay_hist_normalized.path.replace('html', 'png'))
 
     overlay_log_hist = Plot(
         path=path + "NanoComp_OverlayLogHistogram.html",
         title="Histogram of log transformed read lengths")
-    overlay_log_hist.html = plot_overlay_log_histogram(
+    overlay_log_hist.html, fig = plot_overlay_log_histogram(
         df, palette, title=overlay_log_hist.title, histnorm="")
     overlay_log_hist.save()
+    pio.write_image(fig, overlay_log_hist.path.replace('html', 'png'))
 
     overlay_log_hist_normalized = Plot(
         path=path + "NanoComp_OverlayLogHistogram_Normalized.html",
         title="Normalized histogram of log transformed read lengths")
-    overlay_log_hist_normalized.html = plot_overlay_log_histogram(
+    overlay_log_hist_normalized.html, fig = plot_overlay_log_histogram(
         df, palette, title=overlay_log_hist_normalized.title, histnorm="probability")
     overlay_log_hist_normalized.save()
+    pio.write_image(fig, overlay_log_hist_normalized.path.replace('html', 'png'))
 
     return [overlay_hist, overlay_hist_normalized, overlay_log_hist, overlay_log_hist_normalized]
 
@@ -167,16 +181,24 @@ def plot_overlay_histogram(df, palette, title, histnorm):
                          histnorm=histnorm,
                          marker=dict(color=c))
             for d, c in zip(df.dataset.unique(), palette)]
-
-    return plotly.offline.plot(
+    html = plotly.offline.plot(
         {"data": data,
          "layout": go.Layout(barmode='overlay',
                              title=title)},
         output_type="div",
         show_link=False)
+    fig = go.Figure(
+        {"data": data,
+         "layout": go.Layout(barmode='overlay',
+                             title=title)})
+    return html, fig
 
 
 def plot_overlay_log_histogram(df, palette, title, histnorm):
+    """
+    Plot overlaying histograms with log transformation of length
+    Return both html and fig for png
+    """
     data = [go.Histogram(x=np.log10(df.loc[df.dataset == d, "lengths"]),
                          opacity=0.4,
                          name=d,
@@ -184,13 +206,18 @@ def plot_overlay_log_histogram(df, palette, title, histnorm):
                          marker=dict(color=c))
             for d, c in zip(df.dataset.unique(), palette)]
     xtickvals = [10**i for i in range(10) if not 10**i > 10 * np.amax(df["lengths"])]
-    return plotly.offline.plot(
+    html = plotly.offline.plot(
         {"data": data,
          "layout": go.Layout(barmode='overlay',
                              title=title,
                              xaxis=dict(tickvals=np.log10(xtickvals),
-                                        ticktext=xtickvals)
-                             )
-         },
+                                        ticktext=xtickvals))},
         output_type="div",
         show_link=False)
+    fig = go.Figure(
+        {"data": data,
+         "layout": go.Layout(barmode='overlay',
+                             title=title,
+                             xaxis=dict(tickvals=np.log10(xtickvals),
+                                        ticktext=xtickvals))})
+    return html, fig
