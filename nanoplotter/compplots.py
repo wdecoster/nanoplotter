@@ -115,8 +115,7 @@ def compare_cumulative_yields(df, path, palette=None, title=None):
                             )},
         output_type="div",
         show_link=False)
-    with open(cum_yield_gb.path, 'w') as html_out:
-        html_out.write(cum_yield_gb.html)
+    cum_yield_gb.save()
     return [cum_yield_gb]
 
 
