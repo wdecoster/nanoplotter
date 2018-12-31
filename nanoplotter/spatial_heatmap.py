@@ -64,8 +64,7 @@ def spatial_heatmap(array, path, title=None, color="Greens", figformat="png"):
         cmap=color,
         linewidths=0.20)
     ax.set_title(title or activity_map.title)
-    fig = ax.get_figure()
-    activity_map.fig = fig
-    fig.savefig(activity_map.path, format=figformat)
+    activity_map.fig = ax.get_figure()
+    activity_map.save(format=figformat)
     plt.close("all")
     return [activity_map]
