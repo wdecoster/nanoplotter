@@ -1,6 +1,7 @@
 from base64 import b64encode
 from io import BytesIO
 from urllib.parse import quote as urlquote
+import sys
 
 
 class Plot(object):
@@ -32,3 +33,15 @@ class Plot(object):
         buf.seek(0)
         string = b64encode(buf.read())
         return '<img src="data:image/png;base64,{0}">'.format(urlquote(string))
+
+    def save(self, format=None):
+        if self.html:
+            with open(self.path, 'w') as html_out:
+                html_out.write(self.html)
+        elif self.fig:
+            self.fig.savefig(
+                fname=self.path,
+                format=format,
+                bbox_inches='tight')
+        else:
+            sys.exit("No method to save plot object: no html or fig defined.")
