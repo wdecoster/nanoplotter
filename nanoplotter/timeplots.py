@@ -98,13 +98,8 @@ def violin_plots_over_time(dfs, path, figformat, title,
             yticks=np.log10(ticks),
             yticklabels=ticks)
     plt.xticks(rotation=45, ha='center', fontsize=8)
-    fig = ax.get_figure()
-    time_length.fig = fig
-    fig.savefig(
-        fname=time_length.path,
-        format=figformat,
-
-        bbox_inches='tight')
+    time_length.fig = ax.get_figure()
+    time_length.save(format=figformat)
     plt.close("all")
 
     plots = [time_length]
@@ -126,12 +121,8 @@ def violin_plots_over_time(dfs, path, figformat, title,
             ylabel="Basecall quality",
             title=title or time_qual.title)
         plt.xticks(rotation=45, ha='center', fontsize=8)
-        fig = ax.get_figure()
-        time_qual.fig = fig
-        fig.savefig(
-            fname=time_qual.path,
-            format=figformat,
-            bbox_inches='tight')
+        time_qual.fig = ax.get_figure()
+        time_qual.save(format=figformat)
         plots.append(time_qual)
         plt.close("all")
 
@@ -155,12 +146,8 @@ def violin_plots_over_time(dfs, path, figformat, title,
             ylabel="Sequencing speed (nucleotides/second)",
             title=title or time_duration.title)
         plt.xticks(rotation=45, ha='center', fontsize=8)
-        fig = ax.get_figure()
-        time_duration.fig = fig
-        fig.savefig(
-            fname=time_duration.path,
-            format=figformat,
-            bbox_inches='tight')
+        time_duration.fig = ax.get_figure()
+        time_duration.save(format=figformat)
         plots.append(time_duration)
         plt.close("all")
     return plots
@@ -182,9 +169,8 @@ def plot_over_time(dfs, path, figformat, title, color):
         xlabel='Run time (hours)',
         ylabel='Number of reads per 10 minutes',
         title=title or num_reads.title)
-    fig = ax.get_figure()
-    num_reads.fig = fig
-    fig.savefig(num_reads.path, format=figformat, bbox_inches="tight")
+    num_reads.fig = ax.get_figure()
+    num_reads.save(format=figformat)
     plt.close("all")
     plots = [num_reads]
 
@@ -204,9 +190,8 @@ def plot_over_time(dfs, path, figformat, title, color):
             xlabel='Run time (hours)',
             ylabel='Active pores per 10 minutes',
             title=title or pores_over_time.title)
-        fig = ax.get_figure()
-        pores_over_time.fig = fig
-        fig.savefig(pores_over_time.path, format=figformat, bbox_inches="tight")
+        pores_over_time.fig = ax.get_figure()
+        pores_over_time.save(format=figformat)
         plt.close("all")
         plots.append(pores_over_time)
     return plots
@@ -228,9 +213,8 @@ def cumulative_yield(dfs, path, figformat, title, color):
         xlabel='Run time (hours)',
         ylabel='Cumulative yield in gigabase',
         title=title or cum_yield_gb.title)
-    fig = ax.get_figure()
-    cum_yield_gb.fig = fig
-    fig.savefig(cum_yield_gb.path, format=figformat, bbox_inches="tight")
+    cum_yield_gb.fig = ax.get_figure()
+    cum_yield_gb.save(format=figformat)
     plt.close("all")
 
     cum_yield_reads = Plot(
@@ -248,8 +232,7 @@ def cumulative_yield(dfs, path, figformat, title, color):
         xlabel='Run time (hours)',
         ylabel='Cumulative yield in number of reads',
         title=title or cum_yield_reads.title)
-    fig = ax.get_figure()
-    cum_yield_reads.fig = fig
-    fig.savefig(cum_yield_reads.path, format=figformat, bbox_inches="tight")
+    cum_yield_reads.fig = ax.get_figure()
+    cum_yield_reads.save(format=figformat)
     plt.close("all")
     return [cum_yield_gb, cum_yield_reads]
