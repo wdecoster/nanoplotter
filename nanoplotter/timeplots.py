@@ -75,11 +75,11 @@ def violin_plots_over_time(dfs, path, figformat, title,
                                        title=title,
                                        plot_settings=plot_settings))
     if "duration" in dfs:
-        plots.append(sequening_speed_over_time(dfs=dfs,
-                                               path=path,
-                                               figformat=figformat,
-                                               title=title,
-                                               plot_settings=plot_settings))
+        plots.append(sequencing_speed_over_time(dfs=dfs,
+                                                path=path,
+                                                figformat=figformat,
+                                                title=title,
+                                                plot_settings=plot_settings))
     return plots
 
 
@@ -144,7 +144,7 @@ def quality_over_time(dfs, path, figformat, title, plot_settings=None):
     return time_qual
 
 
-def sequening_speed_over_time(dfs, path, figformat, title, plot_settings=None):
+def sequencing_speed_over_time(dfs, path, figformat, title, plot_settings=None):
     time_duration = Plot(
         path=path + "TimeSequencingSpeed_ViolinPlot." + figformat,
         title="Violin plot of sequencing speed over time")
