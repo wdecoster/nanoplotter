@@ -131,10 +131,6 @@ def violin_plots_over_time(dfs, path, figformat, title,
             path=path + "TimeSequencingSpeed_ViolinPlot." + figformat,
             title="Violin plot of sequencing speed over time")
         labels = [str(i) + "-" + str(i + 3) for i in range(0, 168, 3) if not i > (maxtime / 3600)]
-        dfs['timebin'] = pd.cut(
-            x=dfs["start_time"],
-            bins=ceil((maxtime / 3600) / 3),
-            labels=labels)
         ax = sns.violinplot(
             x=dfs["timebin"],
             y=dfs["lengths"] / dfs["duration"],
