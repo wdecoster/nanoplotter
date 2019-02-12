@@ -60,21 +60,38 @@ def time_plots(df, path, title=None, color="#4CB391", figformat="png",
 
 def violin_plots_over_time(dfs, path, figformat, title,
                            log_length=False, plot_settings=None):
-    maxtime = dfs["start_time"].max().total_seconds()
+    dfs['timebin'] = add_time_bins(dfs)
+    plots = []
+    plots.append(length_over_time(dfs=dfs,
+                                  path=path,
+                                  figformat=figformat,
+                                  title=title,
+                                  log_length=log_length,
+                                  plot_settings=plot_settings))
+    if "quals" in dfs:
+        plots.append(quality_over_time(dfs=dfs,
+                                       path=path,
+                                       figformat=figformat,
+                                       title=title,
+                                       plot_settings=plot_settings))
+    if "duration" in dfs:
+        plots.append(sequening_speed_over_time(dfs=dfs,
+                                               path=path,
+                                               figformat=figformat,
+                                               title=title,
+                                               plot_settings=plot_settings))
+    return plots
+
+
+def length_over_time(dfs, path, figformat, title, log_length=False, plot_settings=None):
     time_length = Plot(
         path=path + "TimeLengthViolinPlot." + figformat,
         title="Violin plot of read lengths over time")
     sns.set(style="white", **plot_settings)
-    labels = [str(i) + "-" + str(i + 3) for i in range(0, 168, 3) if not i > (maxtime / 3600)]
     if log_length:
         length_column = "log_lengths"
     else:
         length_column = "lengths"
-
-    dfs['timebin'] = pd.cut(
-        x=dfs["start_time"],
-        bins=ceil((maxtime / 3600) / 3),
-        labels=labels)
 
     if "length_filter" in dfs:  # produced by NanoPlot filtering of too long reads
         temp_dfs = dfs[dfs["length_filter"]]
@@ -101,52 +118,63 @@ def violin_plots_over_time(dfs, path, figformat, title,
     time_length.fig = ax.get_figure()
     time_length.save(format=figformat)
     plt.close("all")
+    return time_length
 
-    plots = [time_length]
 
-    if "quals" in dfs:
-        time_qual = Plot(
-            path=path + "TimeQualityViolinPlot." + figformat,
-            title="Violin plot of quality over time")
-        sns.set(style="white", **plot_settings)
-        ax = sns.violinplot(
-            x="timebin",
-            y="quals",
-            data=dfs,
-            inner=None,
-            cut=0,
-            linewidth=0)
-        ax.set(
-            xlabel='Interval (hours)',
-            ylabel="Basecall quality",
-            title=title or time_qual.title)
-        plt.xticks(rotation=45, ha='center', fontsize=8)
-        time_qual.fig = ax.get_figure()
-        time_qual.save(format=figformat)
-        plots.append(time_qual)
-        plt.close("all")
+def quality_over_time(dfs, path, figformat, title, plot_settings=None):
+    time_qual = Plot(
+        path=path + "TimeQualityViolinPlot." + figformat,
+        title="Violin plot of quality over time")
+    sns.set(style="white", **plot_settings)
+    ax = sns.violinplot(
+        x="timebin",
+        y="quals",
+        data=dfs,
+        inner=None,
+        cut=0,
+        linewidth=0)
+    ax.set(
+        xlabel='Interval (hours)',
+        ylabel="Basecall quality",
+        title=title or time_qual.title)
+    plt.xticks(rotation=45, ha='center', fontsize=8)
+    time_qual.fig = ax.get_figure()
+    time_qual.save(format=figformat)
+    plt.close("all")
+    return time_qual
 
-    if "duration" in dfs:
-        time_duration = Plot(
-            path=path + "TimeSequencingSpeed_ViolinPlot." + figformat,
-            title="Violin plot of sequencing speed over time")
-        labels = [str(i) + "-" + str(i + 3) for i in range(0, 168, 3) if not i > (maxtime / 3600)]
-        ax = sns.violinplot(
-            x=dfs["timebin"],
-            y=dfs["lengths"] / dfs["duration"],
-            inner=None,
-            cut=0,
-            linewidth=0)
-        ax.set(
-            xlabel='Interval (hours)',
-            ylabel="Sequencing speed (nucleotides/second)",
-            title=title or time_duration.title)
-        plt.xticks(rotation=45, ha='center', fontsize=8)
-        time_duration.fig = ax.get_figure()
-        time_duration.save(format=figformat)
-        plots.append(time_duration)
-        plt.close("all")
-    return plots
+
+def sequening_speed_over_time(dfs, path, figformat, title, plot_settings=None):
+    time_duration = Plot(
+        path=path + "TimeSequencingSpeed_ViolinPlot." + figformat,
+        title="Violin plot of sequencing speed over time")
+    sns.set(style="white", **plot_settings)
+    if "timebin" not in dfs:
+        dfs['timebin'] = add_time_bins(dfs)
+    ax = sns.violinplot(
+        x=dfs["timebin"],
+        y=dfs["lengths"] / dfs["duration"],
+        inner=None,
+        cut=0,
+        linewidth=0)
+    ax.set(
+        xlabel='Interval (hours)',
+        ylabel="Sequencing speed (nucleotides/second)",
+        title=title or time_duration.title)
+    plt.xticks(rotation=45, ha='center', fontsize=8)
+    time_duration.fig = ax.get_figure()
+    time_duration.save(format=figformat)
+    plt.close("all")
+    return time_duration
+
+
+def add_time_bins(dfs):
+    maxtime = dfs["start_time"].max().total_seconds()
+    labels = [str(i) + "-" + str(i + 3) for i in range(0, 168, 3) if not i > (maxtime / 3600)]
+    return pd.cut(
+        x=dfs["start_time"],
+        bins=ceil((maxtime / 3600) / 3),
+        labels=labels)
 
 
 def plot_over_time(dfs, path, figformat, title, color):
