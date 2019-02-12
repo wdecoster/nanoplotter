@@ -83,7 +83,7 @@ def violin_plots_over_time(dfs, path, figformat, title,
     return plots
 
 
-def length_over_time(dfs, path, figformat, title, log_length=False, plot_settings=None):
+def length_over_time(dfs, path, figformat, title, log_length=False, plot_settings={}):
     time_length = Plot(
         path=path + "TimeLengthViolinPlot." + figformat,
         title="Violin plot of read lengths over time")
@@ -121,7 +121,7 @@ def length_over_time(dfs, path, figformat, title, log_length=False, plot_setting
     return time_length
 
 
-def quality_over_time(dfs, path, figformat, title, plot_settings=None):
+def quality_over_time(dfs, path, figformat, title, plot_settings={}):
     time_qual = Plot(
         path=path + "TimeQualityViolinPlot." + figformat,
         title="Violin plot of quality over time")
@@ -144,7 +144,7 @@ def quality_over_time(dfs, path, figformat, title, plot_settings=None):
     return time_qual
 
 
-def sequencing_speed_over_time(dfs, path, figformat, title, plot_settings=None):
+def sequencing_speed_over_time(dfs, path, figformat, title, plot_settings={}):
     time_duration = Plot(
         path=path + "TimeSequencingSpeed_ViolinPlot." + figformat,
         title="Violin plot of sequencing speed over time")
