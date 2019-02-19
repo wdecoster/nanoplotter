@@ -84,9 +84,8 @@ def violin_plots_over_time(dfs, path, figformat, title,
 
 
 def length_over_time(dfs, path, figformat, title, log_length=False, plot_settings={}):
-    time_length = Plot(
-        path=path + "TimeLengthViolinPlot." + figformat,
-        title="Violin plot of read lengths over time")
+    time_length = Plot(path=path + "TimeLengthViolinPlot." + figformat,
+                       title="Violin plot of read lengths over time")
     sns.set(style="white", **plot_settings)
     if log_length:
         length_column = "log_lengths"
@@ -98,22 +97,19 @@ def length_over_time(dfs, path, figformat, title, log_length=False, plot_setting
     else:
         temp_dfs = dfs
 
-    ax = sns.violinplot(
-        x="timebin",
-        y=length_column,
-        data=temp_dfs,
-        inner=None,
-        cut=0,
-        linewidth=0)
-    ax.set(
-        xlabel='Interval (hours)',
-        ylabel="Read length",
-        title=title or time_length.title)
+    ax = sns.violinplot(x="timebin",
+                        y=length_column,
+                        data=temp_dfs,
+                        inner=None,
+                        cut=0,
+                        linewidth=0)
+    ax.set(xlabel='Interval (hours)',
+           ylabel="Read length",
+           title=title or time_length.title)
     if log_length:
         ticks = [10**i for i in range(10) if not 10**i > 10 * np.amax(dfs["lengths"])]
-        ax.set(
-            yticks=np.log10(ticks),
-            yticklabels=ticks)
+        ax.set(yticks=np.log10(ticks),
+               yticklabels=ticks)
     plt.xticks(rotation=45, ha='center', fontsize=8)
     time_length.fig = ax.get_figure()
     time_length.save(format=figformat)
@@ -122,21 +118,18 @@ def length_over_time(dfs, path, figformat, title, log_length=False, plot_setting
 
 
 def quality_over_time(dfs, path, figformat, title, plot_settings={}):
-    time_qual = Plot(
-        path=path + "TimeQualityViolinPlot." + figformat,
-        title="Violin plot of quality over time")
+    time_qual = Plot(path=path + "TimeQualityViolinPlot." + figformat,
+                     title="Violin plot of quality over time")
     sns.set(style="white", **plot_settings)
-    ax = sns.violinplot(
-        x="timebin",
-        y="quals",
-        data=dfs,
-        inner=None,
-        cut=0,
-        linewidth=0)
-    ax.set(
-        xlabel='Interval (hours)',
-        ylabel="Basecall quality",
-        title=title or time_qual.title)
+    ax = sns.violinplot(x="timebin",
+                        y="quals",
+                        data=dfs,
+                        inner=None,
+                        cut=0,
+                        linewidth=0)
+    ax.set(xlabel='Interval (hours)',
+           ylabel="Basecall quality",
+           title=title or time_qual.title)
     plt.xticks(rotation=45, ha='center', fontsize=8)
     time_qual.fig = ax.get_figure()
     time_qual.save(format=figformat)
