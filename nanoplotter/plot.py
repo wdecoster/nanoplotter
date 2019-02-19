@@ -1,7 +1,9 @@
+import plotly.io as pio
 from base64 import b64encode
 from io import BytesIO
 from urllib.parse import quote as urlquote
 import sys
+import logging
 
 
 class Plot(object):
@@ -38,6 +40,7 @@ class Plot(object):
         if self.html:
             with open(self.path, 'w') as html_out:
                 html_out.write(self.html)
+            self.save_static()
         elif self.fig:
             self.fig.savefig(
                 fname=self.path,
@@ -45,3 +48,11 @@ class Plot(object):
                 bbox_inches='tight')
         else:
             sys.exit("No method to save plot object: no html or fig defined.")
+
+    def save_static(self):
+        try:
+            pio.write_image(self.fig, self.path.replace('html', 'png'))
+        except ValueError as e:
+            logging.warning("Nanoplotter: orca not found, not creating static image of html. "
+                            "See https://github.com/plotly/orca")
+            logging.warning(e, exc_info=True)

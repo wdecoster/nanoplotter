@@ -6,7 +6,6 @@ import seaborn as sns
 import numpy as np
 import plotly
 import plotly.graph_objs as go
-import plotly.io as pio
 
 
 def violin_or_box_plot(df, y, figformat, path, y_name,
@@ -40,9 +39,8 @@ def violin_or_box_plot(df, y, figformat, path, y_name,
             palette=palette)
     if log:
         ticks = [10**i for i in range(10) if not 10**i > 10 * (10**np.amax(df[y]))]
-        ax.set(
-            yticks=np.log10(ticks),
-            yticklabels=ticks)
+        ax.set(yticks=np.log10(ticks),
+               yticklabels=ticks)
     ax.set(title=title or violin_comp.title,
            ylabel=y_name)
     plt.xticks(rotation=30, ha='center')
@@ -62,9 +60,8 @@ def output_barplot(df, figformat, path, title=None, palette=None):
         x="dataset",
         data=df,
         palette=palette)
-    ax.set(
-        ylabel='Number of reads',
-        title=title or read_count.title)
+    ax.set(ylabel='Number of reads',
+           title=title or read_count.title)
     plt.xticks(rotation=30, ha='center')
     read_count.fig = ax.get_figure()
     read_count.save(format=figformat)
@@ -116,20 +113,15 @@ def compare_cumulative_yields(df, path, palette=None, title=None):
                             )},
         output_type="div",
         show_link=False)
-    cum_yield_gb.save()
 
-    fig = go.Figure({
+    cum_yield_gb.fig = go.Figure({
         "data": data,
         "layout": go.Layout(barmode='overlay',
                             title=title or cum_yield_gb.title,
                             xaxis=dict(title="Time (hours)"),
                             yaxis=dict(title="Yield (gigabase)"),
                             )})
-    try:
-        pio.write_image(fig, cum_yield_gb.path.replace('html', 'png'))
-    except ValueError:
-        logging.info("Nanoplotter: orca not found, not creating static image of dynamic html.\n"
-                     "See https://github.com/plotly/orca")
+    cum_yield_gb.save()
     return [cum_yield_gb]
 
 
@@ -146,47 +138,30 @@ def overlay_histogram(df, path, palette=None):
     overlay_hist = Plot(
         path=path + "NanoComp_OverlayHistogram.html",
         title="Histogram of read lengths")
-    overlay_hist.html, fig = plot_overlay_histogram(
+    overlay_hist.html, overlay_hist.fig = plot_overlay_histogram(
         df, palette, title=overlay_hist.title, histnorm="")
     overlay_hist.save()
-    try:
-        pio.write_image(fig, overlay_hist.path.replace('html', 'png'))
-    except ValueError:
-        logging.info("Nanoplotter: orca not found, not creating static image of dynamic html.\n"
-                     "See https://github.com/plotly/orca")
 
     overlay_hist_normalized = Plot(
         path=path + "NanoComp_OverlayHistogram_Normalized.html",
         title="Normalized histogram of read lengths")
-    overlay_hist_normalized.html, fig = plot_overlay_histogram(
+    overlay_hist_normalized.html, overlay_hist_normalized.fig = plot_overlay_histogram(
         df, palette, title=overlay_hist_normalized.title, histnorm="probability")
     overlay_hist_normalized.save()
-    try:
-        pio.write_image(fig, overlay_hist_normalized.path.replace('html', 'png'))
-    except ValueError:
-        pass
 
     overlay_log_hist = Plot(
         path=path + "NanoComp_OverlayLogHistogram.html",
         title="Histogram of log transformed read lengths")
-    overlay_log_hist.html, fig = plot_overlay_log_histogram(
+    overlay_log_hist.html, overlay_log_hist.fig = plot_overlay_log_histogram(
         df, palette, title=overlay_log_hist.title, histnorm="")
     overlay_log_hist.save()
-    try:
-        pio.write_image(fig, overlay_log_hist.path.replace('html', 'png'))
-    except ValueError:
-        pass
 
     overlay_log_hist_normalized = Plot(
         path=path + "NanoComp_OverlayLogHistogram_Normalized.html",
         title="Normalized histogram of log transformed read lengths")
-    overlay_log_hist_normalized.html, fig = plot_overlay_log_histogram(
+    overlay_log_hist_normalized.html, overlay_log_hist_normalized.fig = plot_overlay_log_histogram(
         df, palette, title=overlay_log_hist_normalized.title, histnorm="probability")
     overlay_log_hist_normalized.save()
-    try:
-        pio.write_image(fig, overlay_log_hist_normalized.path.replace('html', 'png'))
-    except ValueError:
-        pass
 
     return [overlay_hist, overlay_hist_normalized, overlay_log_hist, overlay_log_hist_normalized]
 
