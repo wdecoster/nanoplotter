@@ -135,38 +135,32 @@ def overlay_histogram(df, path, palette=None):
     if palette is None:
         palette = plotly.colors.DEFAULT_PLOTLY_COLORS * 5
 
-    overlay_hist = Plot(
-        path=path + "NanoComp_OverlayHistogram.html",
-        title="Histogram of read lengths")
-    overlay_hist.html, overlay_hist.fig = plot_overlay_histogram(
-        df, palette, title=overlay_hist.title, histnorm="")
-    overlay_hist.save()
+    hist = Plot(path=path + "NanoComp_OverlayHistogram.html",
+                title="Histogram of read lengths")
+    hist.html, hist.fig = plot_overlay_histogram(df, palette, title=hist.title)
+    hist.save()
 
-    overlay_hist_normalized = Plot(
-        path=path + "NanoComp_OverlayHistogram_Normalized.html",
-        title="Normalized histogram of read lengths")
-    overlay_hist_normalized.html, overlay_hist_normalized.fig = plot_overlay_histogram(
-        df, palette, title=overlay_hist_normalized.title, histnorm="probability")
-    overlay_hist_normalized.save()
+    hist_norm = Plot(path=path + "NanoComp_OverlayHistogram_Normalized.html",
+                     title="Normalized histogram of read lengths")
+    hist_norm.html, hist_norm.fig = plot_overlay_histogram(
+        df, palette, title=hist_norm.title, histnorm="probability")
+    hist_norm.save()
 
-    overlay_log_hist = Plot(
-        path=path + "NanoComp_OverlayLogHistogram.html",
-        title="Histogram of log transformed read lengths")
-    overlay_log_hist.html, overlay_log_hist.fig = plot_overlay_log_histogram(
-        df, palette, title=overlay_log_hist.title, histnorm="")
-    overlay_log_hist.save()
+    log_hist = Plot(path=path + "NanoComp_OverlayLogHistogram.html",
+                    title="Histogram of log transformed read lengths")
+    log_hist.html, log_hist.fig = plot_log_histogram(df, palette, title=log_hist.title)
+    log_hist.save()
 
-    overlay_log_hist_normalized = Plot(
-        path=path + "NanoComp_OverlayLogHistogram_Normalized.html",
-        title="Normalized histogram of log transformed read lengths")
-    overlay_log_hist_normalized.html, overlay_log_hist_normalized.fig = plot_overlay_log_histogram(
-        df, palette, title=overlay_log_hist_normalized.title, histnorm="probability")
-    overlay_log_hist_normalized.save()
+    log_hist_norm = Plot(path=path + "NanoComp_OverlayLogHistogram_Normalized.html",
+                         title="Normalized histogram of log transformed read lengths")
+    log_hist_norm.html, log_hist_norm.fig = plot_log_histogram(
+        df, palette, title=log_hist_norm.title, histnorm="probability")
+    log_hist_norm.save()
 
-    return [overlay_hist, overlay_hist_normalized, overlay_log_hist, overlay_log_hist_normalized]
+    return [hist, hist_norm, log_hist, log_hist_norm]
 
 
-def plot_overlay_histogram(df, palette, title, histnorm):
+def plot_overlay_histogram(df, palette, title, histnorm=""):
     data = [go.Histogram(x=df.loc[df.dataset == d, "lengths"],
                          opacity=0.4,
                          name=d,
@@ -186,7 +180,7 @@ def plot_overlay_histogram(df, palette, title, histnorm):
     return html, fig
 
 
-def plot_overlay_log_histogram(df, palette, title, histnorm):
+def plot_log_histogram(df, palette, title, histnorm=""):
     """
     Plot overlaying histograms with log transformation of length
     Return both html and fig for png
