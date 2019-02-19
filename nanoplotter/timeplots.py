@@ -158,13 +158,13 @@ def sequencing_speed_over_time(dfs, path, figformat, title, plot_settings={}):
     return time_duration
 
 
-def add_time_bins(dfs):
+def add_time_bins(dfs, bin_length=3):
     maxtime = dfs["start_time"].max().total_seconds()
-    labels = [str(i) + "-" + str(i + 3) for i in range(0, 168, 3) if not i > (maxtime / 3600)]
-    return pd.cut(
-        x=dfs["start_time"],
-        bins=ceil((maxtime / 3600) / 3),
-        labels=labels)
+    labels = [str(i) + "-" + str(i + bin_length)
+              for i in range(0, 168, bin_length) if not i > (maxtime / 3600)]
+    return pd.cut(x=dfs["start_time"],
+                  bins=ceil((maxtime / 3600) / bin_length),
+                  labels=labels)
 
 
 def plot_over_time(dfs, path, figformat, title, color):
