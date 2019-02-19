@@ -87,8 +87,8 @@ def compare_cumulative_yields(df, path, palette=None, title=None):
     cum_yield_gb = Plot(path=path + "NanoComp_CumulativeYieldPlot_Gigabases.html",
                         title="Cumulative yield")
     data = []
-    for d, c in zip(df.dataset.unique(), palette):
-        s = dfs.loc[dfs.dataset == d, "lengths"].cumsum().resample('10T').max() / 1e9
+    for d, c in zip(df["dataset"].unique(), palette):
+        s = dfs.loc[dfs["dataset"] == d, "lengths"].cumsum().resample('10T').max() / 1e9
         data.append(go.Scatter(x=s.index.total_seconds() / 3600,
                                y=s,
                                opacity=0.75,
@@ -152,12 +152,12 @@ def overlay_histogram(df, path, palette=None):
 
 
 def plot_overlay_histogram(df, palette, title, histnorm=""):
-    data = [go.Histogram(x=df.loc[df.dataset == d, "lengths"],
+    data = [go.Histogram(x=df.loc[df["dataset"] == d, "lengths"],
                          opacity=0.4,
                          name=d,
                          histnorm=histnorm,
                          marker=dict(color=c))
-            for d, c in zip(df.dataset.unique(), palette)]
+            for d, c in zip(df["dataset"].unique(), palette)]
     html = plotly.offline.plot(
         {"data": data,
          "layout": go.Layout(barmode='overlay',
@@ -176,12 +176,12 @@ def plot_log_histogram(df, palette, title, histnorm=""):
     Plot overlaying histograms with log transformation of length
     Return both html and fig for png
     """
-    data = [go.Histogram(x=np.log10(df.loc[df.dataset == d, "lengths"]),
+    data = [go.Histogram(x=np.log10(df.loc[df["dataset"] == d, "lengths"]),
                          opacity=0.4,
                          name=d,
                          histnorm=histnorm,
                          marker=dict(color=c))
-            for d, c in zip(df.dataset.unique(), palette)]
+            for d, c in zip(df["dataset"].unique(), palette)]
     xtickvals = [10**i for i in range(10) if not 10**i > 10 * np.amax(df["lengths"])]
     html = plotly.offline.plot(
         {"data": data,
