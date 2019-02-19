@@ -96,7 +96,7 @@ def compare_sequencing_speed(df, figformat, path, title=None, palette=None):
     seq_speed.fig = ax.get_figure()
     seq_speed.save(format=figformat)
     plt.close("all")
-    return seq_speed
+    return [seq_speed]
 
 
 def compare_cumulative_yields(df, path, palette=None, title=None):
