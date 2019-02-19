@@ -145,22 +145,19 @@ def quality_over_time(dfs, path, figformat, title, plot_settings={}):
 
 
 def sequencing_speed_over_time(dfs, path, figformat, title, plot_settings={}):
-    time_duration = Plot(
-        path=path + "TimeSequencingSpeed_ViolinPlot." + figformat,
-        title="Violin plot of sequencing speed over time")
+    time_duration = Plot(path=path + "TimeSequencingSpeed_ViolinPlot." + figformat,
+                         title="Violin plot of sequencing speed over time")
     sns.set(style="white", **plot_settings)
     if "timebin" not in dfs:
         dfs['timebin'] = add_time_bins(dfs)
-    ax = sns.violinplot(
-        x=dfs["timebin"],
-        y=dfs["lengths"] / dfs["duration"],
-        inner=None,
-        cut=0,
-        linewidth=0)
-    ax.set(
-        xlabel='Interval (hours)',
-        ylabel="Sequencing speed (nucleotides/second)",
-        title=title or time_duration.title)
+    ax = sns.violinplot(x=dfs["timebin"],
+                        y=dfs["lengths"] / dfs["duration"],
+                        inner=None,
+                        cut=0,
+                        linewidth=0)
+    ax.set(xlabel='Interval (hours)',
+           ylabel="Sequencing speed (nucleotides/second)",
+           title=title or time_duration.title)
     plt.xticks(rotation=45, ha='center', fontsize=8)
     time_duration.fig = ax.get_figure()
     time_duration.save(format=figformat)
@@ -178,42 +175,36 @@ def add_time_bins(dfs):
 
 
 def plot_over_time(dfs, path, figformat, title, color):
-    num_reads = Plot(
-        path=path + "NumberOfReads_Over_Time." + figformat,
-        title="Number of reads over time")
+    num_reads = Plot(path=path + "NumberOfReads_Over_Time." + figformat,
+                     title="Number of reads over time")
     s = dfs.loc[:, "lengths"].resample('10T').count()
-    ax = sns.regplot(
-        x=s.index.total_seconds() / 3600,
-        y=s,
-        x_ci=None,
-        fit_reg=False,
-        color=color,
-        scatter_kws={"s": 3})
-    ax.set(
-        xlabel='Run time (hours)',
-        ylabel='Number of reads per 10 minutes',
-        title=title or num_reads.title)
+    ax = sns.regplot(x=s.index.total_seconds() / 3600,
+                     y=s,
+                     x_ci=None,
+                     fit_reg=False,
+                     color=color,
+                     scatter_kws={"s": 3})
+    ax.set(xlabel='Run time (hours)',
+           ylabel='Number of reads per 10 minutes',
+           title=title or num_reads.title)
     num_reads.fig = ax.get_figure()
     num_reads.save(format=figformat)
     plt.close("all")
     plots = [num_reads]
 
     if "channelIDs" in dfs:
-        pores_over_time = Plot(
-            path=path + "ActivePores_Over_Time." + figformat,
-            title="Number of active pores over time")
+        pores_over_time = Plot(path=path + "ActivePores_Over_Time." + figformat,
+                               title="Number of active pores over time")
         s = dfs.loc[:, "channelIDs"].resample('10T').nunique()
-        ax = sns.regplot(
-            x=s.index.total_seconds() / 3600,
-            y=s,
-            x_ci=None,
-            fit_reg=False,
-            color=color,
-            scatter_kws={"s": 3})
-        ax.set(
-            xlabel='Run time (hours)',
-            ylabel='Active pores per 10 minutes',
-            title=title or pores_over_time.title)
+        ax = sns.regplot(x=s.index.total_seconds() / 3600,
+                         y=s,
+                         x_ci=None,
+                         fit_reg=False,
+                         color=color,
+                         scatter_kws={"s": 3})
+        ax.set(xlabel='Run time (hours)',
+               ylabel='Active pores per 10 minutes',
+               title=title or pores_over_time.title)
         pores_over_time.fig = ax.get_figure()
         pores_over_time.save(format=figformat)
         plt.close("all")
@@ -222,40 +213,34 @@ def plot_over_time(dfs, path, figformat, title, color):
 
 
 def cumulative_yield(dfs, path, figformat, title, color):
-    cum_yield_gb = Plot(
-        path=path + "CumulativeYieldPlot_Gigabases." + figformat,
-        title="Cumulative yield")
+    cum_yield_gb = Plot(path=path + "CumulativeYieldPlot_Gigabases." + figformat,
+                        title="Cumulative yield")
     s = dfs.loc[:, "lengths"].cumsum().resample('1T').max() / 1e9
-    ax = sns.regplot(
-        x=s.index.total_seconds() / 3600,
-        y=s,
-        x_ci=None,
-        fit_reg=False,
-        color=color,
-        scatter_kws={"s": 3})
-    ax.set(
-        xlabel='Run time (hours)',
-        ylabel='Cumulative yield in gigabase',
-        title=title or cum_yield_gb.title)
+    ax = sns.regplot(x=s.index.total_seconds() / 3600,
+                     y=s,
+                     x_ci=None,
+                     fit_reg=False,
+                     color=color,
+                     scatter_kws={"s": 3})
+    ax.set(xlabel='Run time (hours)',
+           ylabel='Cumulative yield in gigabase',
+           title=title or cum_yield_gb.title)
     cum_yield_gb.fig = ax.get_figure()
     cum_yield_gb.save(format=figformat)
     plt.close("all")
 
-    cum_yield_reads = Plot(
-        path=path + "CumulativeYieldPlot_NumberOfReads." + figformat,
-        title="Cumulative yield")
+    cum_yield_reads = Plot(path=path + "CumulativeYieldPlot_NumberOfReads." + figformat,
+                           title="Cumulative yield")
     s = dfs.loc[:, "lengths"].resample('10T').count().cumsum()
-    ax = sns.regplot(
-        x=s.index.total_seconds() / 3600,
-        y=s,
-        x_ci=None,
-        fit_reg=False,
-        color=color,
-        scatter_kws={"s": 3})
-    ax.set(
-        xlabel='Run time (hours)',
-        ylabel='Cumulative yield in number of reads',
-        title=title or cum_yield_reads.title)
+    ax = sns.regplot(x=s.index.total_seconds() / 3600,
+                     y=s,
+                     x_ci=None,
+                     fit_reg=False,
+                     color=color,
+                     scatter_kws={"s": 3})
+    ax.set(xlabel='Run time (hours)',
+           ylabel='Cumulative yield in number of reads',
+           title=title or cum_yield_reads.title)
     cum_yield_reads.fig = ax.get_figure()
     cum_yield_reads.save(format=figformat)
     plt.close("all")
