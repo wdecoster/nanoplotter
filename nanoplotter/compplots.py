@@ -1,5 +1,5 @@
 from nanoplotter.plot import Plot
-from nanoplotter.timeplots import check_valid_time_and_sort
+from nanoplotter.timeplots import check_valid_time_and_sort, add_time_bins
 import logging
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -76,6 +76,27 @@ def output_barplot(df, figformat, path, title=None, palette=None):
     throughput_bases.save(format=figformat)
     plt.close("all")
     return read_count, throughput_bases
+
+
+def compare_sequencing_speed(df, figformat, path, title=None, palette=None):
+    logging.info("Nanoplotter: creating comparison of sequencing speed over time.")
+    seq_speed = Plot(path=path + "NanoComp_sequencing_speed_over_time." + figformat,
+                     title="Sequencing speed over time")
+    dfs = check_valid_time_and_sort(df, "start_time")
+    dfs['timebin'] = add_time_bins(dfs)
+    ax = sns.violinplot(x=dfs["timebin"],
+                        y=dfs["lengths"] / dfs["duration"],
+                        hue=dfs["dataset"],
+                        inner=None,
+                        cut=0,
+                        linewidth=0)
+    ax.set(xlabel='Interval (hours)',
+           ylabel="Sequencing speed (nucleotides/second)")
+    plt.xticks(rotation=45, ha='center', fontsize=8)
+    seq_speed.fig = ax.get_figure()
+    seq_speed.save(format=figformat)
+    plt.close("all")
+    return seq_speed
 
 
 def compare_cumulative_yields(df, path, palette=None, title=None):
