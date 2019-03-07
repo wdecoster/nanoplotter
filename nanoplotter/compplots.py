@@ -63,13 +63,18 @@ def output_barplot(df, figformat, path, title=None, palette=None):
     plt.close("all")
 
     throughput_bases = Plot(path=path + "NanoComp_total_throughput." + figformat,
-                            title="Comparing throughput in gigabases sequenced")
-    throughput = df.groupby('dataset')['lengths'].sum()
+                            title="Comparing throughput in gigabases")
+    if "aligned_lengths" in df:
+        throughput = df.groupby('dataset')['aligned_lengths'].sum()
+        ylabel = 'Total gigabase aligned'
+    else:
+        throughput = df.groupby('dataset')['lengths'].sum()
+        ylabel = 'Total gigabase sequenced'
     ax = sns.barplot(x=list(throughput.index),
                      y=throughput / 1e9,
                      palette=palette,
                      order=df["dataset"].unique())
-    ax.set(ylabel='Total gigabase sequenced',
+    ax.set(ylabel=ylabel,
            title=title or throughput_bases.title)
     plt.xticks(rotation=30, ha='center')
     throughput_bases.fig = ax.get_figure()
