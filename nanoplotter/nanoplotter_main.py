@@ -87,6 +87,8 @@ def scatter(x, y, names, path, plots, color="#4CB391", figformat="png",
     """
     logging.info("Nanoplotter: Creating {} vs {} plots using statistics from {} reads.".format(
         names[0], names[1], x.size))
+    if not contains_variance([x, y], names):
+        return []
     sns.set(style="ticks", **plot_settings)
     maxvalx = np.amax(x)
     maxvaly = np.amax(y)
@@ -204,6 +206,20 @@ def scatter(x, y, names, path, plots, color="#4CB391", figformat="png",
     return plots_made
 
 
+def contains_variance(arrays, names):
+    """
+    Make sure both arrays for bivariate ("scatter") plot have a stddev > 0
+    """
+    for ar, name in zip(arrays, names):
+        if np.std(ar) == 0:
+            sys.stderr.write(
+                "No variation in '{}', skipping bivariate plots.\n".format(name.lower()))
+            logging.info("Nanoplotter: No variation in {}, skipping bivariate plot".format(name))
+            return False
+    else:
+        return True
+
+
 def length_plots(array, name, path, title=None, n50=None, color="#4CB391", figformat="png"):
     """Create histogram of normal and log transformed read lengths."""
     logging.info("Nanoplotter: Creating length plots for {}.".format(name))
@@ -219,8 +235,8 @@ def length_plots(array, name, path, title=None, n50=None, color="#4CB391", figfo
     for h_type in [HistType(None, "", "Number of reads"),
                    HistType(array, "Weighted ", "Number of bases")]:
         histogram = Plot(
-            path=path + h_type.name.replace(" ", "_") + "Histogram" +
-            name.replace(' ', '') + "." + figformat,
+            path=path + h_type.name.replace(" ", "_") + "Histogram"
+            + name.replace(' ', '') + "." + figformat,
             title=h_type.name + "Histogram of read lengths")
         ax = sns.distplot(
             a=array,
@@ -245,8 +261,8 @@ def length_plots(array, name, path, title=None, n50=None, color="#4CB391", figfo
         plt.close("all")
 
         log_histogram = Plot(
-            path=path + h_type.name.replace(" ", "_") + "LogTransformed_Histogram" +
-            name.replace(' ', '') + "." + figformat,
+            path=path + h_type.name.replace(" ", "_") + "LogTransformed_Histogram"
+            + name.replace(' ', '') + "." + figformat,
             title=h_type.name + "Histogram of read lengths after log transformation")
         ax = sns.distplot(
             a=np.log10(array),
