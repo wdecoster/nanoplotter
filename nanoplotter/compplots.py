@@ -6,45 +6,78 @@ import seaborn as sns
 import numpy as np
 import plotly
 import plotly.graph_objs as go
+import sys
+import joypy
 
 
 def violin_or_box_plot(df, y, figformat, path, y_name,
-                       title=None, violin=True, log=False, palette=None):
+                       title=None, plot="violin", log=False, palette=None):
     """Create a violin or boxplot from the received DataFrame.
 
     The x-axis should be divided based on the 'dataset' column,
     the y-axis is specified in the arguments
     """
-    violin_comp = Plot(path=path + "NanoComp_" + y.replace(' ', '_') + '.' + figformat,
-                       title="Comparing {}".format(y))
+    comp = Plot(path=path + "NanoComp_" + y.replace(' ', '_') + '.' + figformat,
+                title="Comparing {}".format(y))
     if y == "quals":
-        violin_comp.title = "Comparing base call quality scores"
-    if violin:
+        comp.title = "Comparing base call quality scores"
+
+    if plot == 'violin':
         logging.info("Nanoplotter: Creating violin plot for {}.".format(y))
-        ax = sns.violinplot(x="dataset",
-                            y=y,
-                            data=df,
-                            inner=None,
-                            cut=0,
-                            palette=palette,
-                            linewidth=0)
-    else:
+        process_violin_and_box(ax=sns.violinplot(x="dataset",
+                                                 y=y,
+                                                 data=df,
+                                                 inner=None,
+                                                 cut=0,
+                                                 palette=palette,
+                                                 linewidth=0),
+                               log=log,
+                               plot_obj=comp,
+                               title=title,
+                               y_name=y_name,
+                               figformat=figformat,
+                               ymax=np.amax(df[y]))
+    elif plot == 'box':
         logging.info("Nanoplotter: Creating box plot for {}.".format(y))
-        ax = sns.boxplot(x="dataset",
-                         y=y,
-                         data=df,
-                         palette=palette)
+        process_violin_and_box(ax=sns.boxplot(x="dataset",
+                                              y=y,
+                                              data=df,
+                                              palette=palette),
+                               log=log,
+                               plot_obj=comp,
+                               title=title,
+                               y_name=y_name,
+                               figformat=figformat,
+                               ymax=np.amax(df[y]))
+    elif plot == 'ridge':
+        logging.info("Nanoplotter: Creating ridges plot for {}.".format(y))
+        comp.fig, axes = joypy.joyplot(df,
+                                       by="dataset",
+                                       column=y,
+                                       title=title or comp.title,
+                                       x_range=[-0.05, np.amax(df[y])])
+        if log:
+            xticks = [float(i.get_text()) for i in axes[-1].get_xticklabels()]
+            axes[-1].set_xticklabels([10**i for i in xticks])
+        axes[-1].set_xticklabels(axes[-1].get_xticklabels(), rotation=30, ha='center')
+        comp.save(format=figformat)
+    else:
+        logging.error("Unknown comp plot type {}".format(plot))
+        sys.exit("Unknown comp plot type {}".format(plot))
+    plt.close("all")
+    return [comp]
+
+
+def process_violin_and_box(ax, log, plot_obj, title, y_name, figformat, ymax):
     if log:
-        ticks = [10**i for i in range(10) if not 10**i > 10 * (10**np.amax(df[y]))]
+        ticks = [10**i for i in range(10) if not 10**i > 10 * (10**ymax)]
         ax.set(yticks=np.log10(ticks),
                yticklabels=ticks)
-    ax.set(title=title or violin_comp.title,
+    ax.set(title=title or plot_obj.title,
            ylabel=y_name)
     plt.xticks(rotation=30, ha='center')
-    violin_comp.fig = ax.get_figure()
-    violin_comp.save(format=figformat)
-    plt.close("all")
-    return [violin_comp]
+    plot_obj.fig = ax.get_figure()
+    plot_obj.save(format=figformat)
 
 
 def output_barplot(df, figformat, path, title=None, palette=None):
