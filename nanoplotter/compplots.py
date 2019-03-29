@@ -147,6 +147,7 @@ def compare_sequencing_speed(df, figformat, path, title=None, palette=None):
                      title="Sequencing speed over time")
     dfs = check_valid_time_and_sort(df, "start_time")
     dfs['timebin'] = add_time_bins(dfs)
+    dfs = dfs.loc[dfs["duration"] > 0]
     ax = sns.violinplot(x=dfs["timebin"],
                         y=dfs["lengths"] / dfs["duration"],
                         hue=dfs["dataset"],
