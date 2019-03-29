@@ -1,5 +1,6 @@
 from nanoplotter.plot import Plot
 from nanoplotter.timeplots import check_valid_time_and_sort, add_time_bins
+from nanomath import get_N50
 import logging
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -114,6 +115,30 @@ def output_barplot(df, figformat, path, title=None, palette=None):
     throughput_bases.save(format=figformat)
     plt.close("all")
     return read_count, throughput_bases
+
+
+def n50_barplot(df, figformat, path, title=None, palette=None):
+    n50_bar = Plot(path=path + "NanoComp_N50." + figformat,
+                   title="Comparing read length N50")
+    if "aligned_lengths" in df:
+        n50s = [get_N50(np.sort(df.loc[df["dataset"] == d, "aligned_lengths"]))
+                for d in df["dataset"].unique()]
+        ylabel = 'Total gigabase aligned'
+    else:
+        n50s = [get_N50(np.sort(df.loc[df["dataset"] == d, "lengths"]))
+                for d in df["dataset"].unique()]
+        ylabel = 'Sequenced read length N50'
+    ax = sns.barplot(x=list(df["dataset"].unique()),
+                     y=n50s,
+                     palette=palette,
+                     order=df["dataset"].unique())
+    ax.set(ylabel=ylabel,
+           title=title or n50_bar.title)
+    plt.xticks(rotation=30, ha='center')
+    n50_bar.fig = ax.get_figure()
+    n50_bar.save(format=figformat)
+    plt.close("all")
+    return [n50_bar]
 
 
 def compare_sequencing_speed(df, figformat, path, title=None, palette=None):
