@@ -38,6 +38,7 @@ import seaborn as sns
 from pauvre.marginplot import margin_plot
 from nanoplotter.timeplots import time_plots
 from nanoplotter.spatial_heatmap import spatial_heatmap
+from matplotlib import cm
 
 
 def check_valid_color(color):
@@ -52,6 +53,20 @@ def check_valid_color(color):
         logging.info("Nanoplotter: Invalid color {}, using default.".format(color))
         sys.stderr.write("Invalid color {}, using default.\n".format(color))
         return "#4CB391"
+
+
+def check_valid_colormap(colormap):
+    """Check if the colormap provided by the user is valid.
+
+    If colormap is invalid the default is returned.
+    """
+    if colormap in list(cm.cmap_d.keys()):
+        logging.info("Nanoplotter: Valid colormap {}.".format(colormap))
+        return colormap
+    else:
+        logging.info("Nanoplotter: Invalid colormap {}, using default.".format(colormap))
+        sys.stderr.write("Invalid colormap {}, using default.\n".format(colormap))
+        return "Greens"
 
 
 def check_valid_format(figformat):
