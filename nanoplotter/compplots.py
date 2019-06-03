@@ -19,9 +19,7 @@ def violin_or_box_plot(df, y, figformat, path, y_name,
     the y-axis is specified in the arguments
     """
     comp = Plot(path=path + "NanoComp_" + y.replace(' ', '_') + '.' + figformat,
-                title="Comparing {}".format(y))
-    if y == "quals":
-        comp.title = "Comparing base call quality scores"
+                title="Comparing {}".format(y_name.lower()))
 
     if plot == 'violin':
         logging.info("Nanoplotter: Creating violin plot for {}.".format(y))
