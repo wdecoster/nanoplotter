@@ -170,20 +170,31 @@ def compare_cumulative_yields(df, path, palette=None, title=None):
     cum_yield_gb = Plot(path=path + "NanoComp_CumulativeYieldPlot_Gigabases.html",
                         title="Cumulative yield")
     data = []
-    for d, c in zip(df["dataset"].unique(), palette):
-        s = dfs.loc[dfs["dataset"] == d, "lengths"].cumsum().resample('10T').max() / 1e9
-        data.append(go.Scatter(x=s.index.total_seconds() / 3600,
-                               y=s,
+    annotations = []
+    for sample, color in zip(df["dataset"].unique(), palette):
+        cumsum = dfs.loc[dfs["dataset"] == sample, "lengths"].cumsum().resample('10T').max() / 1e9
+        data.append(go.Scatter(x=cumsum.index.total_seconds() / 3600,
+                               y=cumsum,
                                opacity=0.75,
-                               name=d,
-                               marker=dict(color=c))
+                               name=sample,
+                               marker=dict(color=color))
                     )
+        annotations.append(dict(xref='paper',
+                                x=0.99,
+                                y=cumsum[-1],
+                                xanchor='left',
+                                yanchor='middle',
+                                text='{}Gb'.format(round(cumsum[-1])),
+                                showarrow=False)
+                           )
+
     cum_yield_gb.html = plotly.offline.plot({
         "data": data,
         "layout": go.Layout(barmode='overlay',
                             title=title or cum_yield_gb.title,
                             xaxis=dict(title="Time (hours)"),
                             yaxis=dict(title="Yield (gigabase)"),
+                            annotations=annotations
                             )},
         output_type="div",
         show_link=False)
@@ -194,6 +205,7 @@ def compare_cumulative_yields(df, path, palette=None, title=None):
                             title=title or cum_yield_gb.title,
                             xaxis=dict(title="Time (hours)"),
                             yaxis=dict(title="Yield (gigabase)"),
+                            annotations=annotations
                             )})
     cum_yield_gb.save()
     return [cum_yield_gb]
