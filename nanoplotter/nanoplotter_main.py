@@ -91,7 +91,8 @@ def plot_settings(plot_settings, dpi):
 
 
 def scatter(x, y, names, path, plots, color="#4CB391", figformat="png",
-            stat=None, log=False, minvalx=0, minvaly=0, title=None, plot_settings=None):
+            stat=None, log=False, minvalx=0, minvaly=0, title=None,
+            plot_settings={}, xmax=None, ymax=None):
     """Create bivariate plots.
 
     Create four types of bivariate plots of x vs y, containing marginal summaries
@@ -105,8 +106,8 @@ def scatter(x, y, names, path, plots, color="#4CB391", figformat="png",
     if not contains_variance([x, y], names):
         return []
     sns.set(style="ticks", **plot_settings)
-    maxvalx = np.amax(x)
-    maxvaly = np.amax(y)
+    maxvalx = xmax or np.amax(x)
+    maxvaly = ymax or np.amax(y)
 
     plots_made = []
 
