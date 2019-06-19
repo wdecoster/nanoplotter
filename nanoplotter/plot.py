@@ -49,6 +49,12 @@ class Plot(object):
         else:
             sys.exit("No method to save plot object: no html or fig defined.")
 
+    def show(self):
+        if self.fig:
+            return self.fig.fig
+        else:
+            sys.stderr.write(".show not implemented for Plot instance without fig attribute!")
+
     def save_static(self):
         try:
             pio.write_image(self.fig, self.path.replace('html', 'png'))
