@@ -1,9 +1,9 @@
 # nanoplotter
 This module provides functions for plotting data extracted from Oxford Nanopore sequencing reads and alignments, but some of it's functions can also be used for other applications.
 
+**This module is essentially deprecated, as the code got copied to NanoPlot and NanoComp themselves. There will be no more updates after nanoplotter v1.10.0.**
+
 [![Twitter URL](https://img.shields.io/twitter/url/https/twitter.com/wouter_decoster.svg?style=social&label=Follow%20%40wouter_decoster)](https://twitter.com/wouter_decoster)
-[![install with conda](https://anaconda.org/bioconda/nanoplotter/badges/installer/conda.svg)](https://anaconda.org/bioconda/nanoplotter)
-[![Build Status](https://travis-ci.org/wdecoster/nanoplotter.svg?branch=master)](https://travis-ci.org/wdecoster/nanoplotter)
 
 
 
